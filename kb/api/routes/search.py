@@ -1,14 +1,15 @@
 # kb/api/routes/search.py
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
+from ...core.config import get_config
 from ...core.database import get_session
-from ...core.schemas import EntryResponse, SearchQuery, EntryType
+from ...core.schemas import EntryResponse
 from ...services.search_service import SearchService
 from ...storage.vector_store import VectorStore
-from ...core.config import get_config
 from ..dependencies import get_current_user
 
 router = APIRouter()
@@ -32,7 +33,7 @@ async def search_entries(
 ):
     """
     Search entries with filters
-    
+
     - **q**: Search text (searches title and content)
     - **entry_types**: Filter by entry types
     - **tags**: Filter by tags (AND logic)
@@ -42,7 +43,7 @@ async def search_entries(
     - **limit**: Maximum results (1-500)
     - **offset**: Pagination offset
     """
-    
+
     entries = search_service.search(
         query=q,
         entry_types=entry_types,
@@ -53,7 +54,7 @@ async def search_entries(
         limit=limit,
         offset=offset
     )
-    
+
     return [
         EntryResponse(
             id=entry.id,
@@ -84,31 +85,31 @@ async def semantic_search(
 ):
     """
     Semantic search using vector embeddings
-    
+
     Returns entries with similarity scores
     """
-    
+
     config = get_config()
-    
+
     if not config.semantic_search_enabled:
         from fastapi import HTTPException
         raise HTTPException(
             status_code=503,
             detail="Semantic search is not enabled"
         )
-    
+
     vector_store = VectorStore(config.vector_db_path)
     results = vector_store.search(q, limit=limit)
-    
+
     # Fetch full entries
     if results:
         from ...core.models import Entry
         db = next(get_session())
-        
+
         entry_ids = [r['id'] for r in results]
         entries = db.query(Entry).filter(Entry.id.in_(entry_ids)).all()
         entries_dict = {e.id: e for e in entries}
-        
+
         # Combine with similarity scores
         response = []
         for result in results:
@@ -132,9 +133,9 @@ async def semantic_search(
                     ),
                     'similarity_score': result['similarity']
                 })
-        
+
         return response
-    
+
     return []
 
 
@@ -146,12 +147,12 @@ async def recent_entries(
     current_user: dict = Depends(get_current_user)
 ):
     """Get most recently updated entries"""
-    
+
     entries = search_service.get_recent_entries(
         limit=limit,
         entry_types=entry_types
     )
-    
+
     return [
         EntryResponse(
             id=entry.id,
@@ -176,9 +177,9 @@ async def orphaned_entries(
     current_user: dict = Depends(get_current_user)
 ):
     """Find entries with no tags, projects, or links"""
-    
+
     entries = search_service.get_orphaned_entries()
-    
+
     return [
         EntryResponse(
             id=entry.id,

@@ -1,9 +1,11 @@
 # kb/core/schemas.py
 
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, validator
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class EntryType(str, Enum):
     NOTE = "note"
@@ -51,7 +53,7 @@ class EntryResponse(EntryBase):
     tags: List[str] = []
     projects: List[str] = []
     version_count: int = 0
-    
+
     class Config:
         from_attributes = True
 
@@ -61,7 +63,7 @@ class EntryVersionResponse(BaseModel):
     changed_at: datetime
     change_type: str
     change_summary: Optional[str]
-    
+
     class Config:
         from_attributes = True
 
@@ -78,7 +80,7 @@ class LinkResponse(BaseModel):
     link_type: str
     strength: float
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 

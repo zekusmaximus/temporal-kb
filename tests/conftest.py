@@ -4,10 +4,11 @@
 Shared pytest fixtures and configuration for all tests
 """
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -29,9 +30,9 @@ def clean_db():
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    
+
     yield session
-    
+
     session.close()
     Base.metadata.drop_all(engine)
 

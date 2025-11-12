@@ -1,11 +1,11 @@
 # kb/api/routes/projects.py
 
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 
 from ...core.database import get_session
-from ...core.models import Project, EntryProject
+from ...core.models import EntryProject, Project
 from ...core.schemas import ProjectCreate
 from ..dependencies import get_current_user
 
@@ -17,9 +17,9 @@ async def list_projects(
     current_user: dict = Depends(get_current_user)
 ):
     """List all projects with entry counts"""
-    
+
     from sqlalchemy import func
-    
+
     projects = db.query(
         Project.id,
         Project.name,
@@ -32,7 +32,7 @@ async def list_projects(
         .group_by(Project.id)\
         .order_by(func.count(EntryProject.entry_id).desc())\
         .all()
-    
+
     return [
         {
             "id": proj.id,
@@ -53,7 +53,7 @@ async def create_project(
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new project"""
-    
+
     project = Project(
         name=project_data.name,
         project_type=project_data.project_type,
@@ -61,11 +61,11 @@ async def create_project(
         description=project_data.description,
         parent_project_id=project_data.parent_project_id
     )
-    
+
     db.add(project)
     db.commit()
     db.refresh(project)
-    
+
     return {
         "id": project.id,
         "name": project.name,
