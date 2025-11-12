@@ -1,0 +1,47 @@
+# Temporal KB Development Configuration
+# Copy this file to development.yaml and customize
+
+# Data storage
+data_dir: ~/.temporal-kb/data
+config_dir: ~/.temporal-kb/config
+
+# Database - Use SQLite for local development
+# db_path will be auto-generated as: {data_dir}/db/kb.db
+# For PostgreSQL, uncomment and configure:
+# postgres_url: postgresql://user:password@localhost:5432/temporal_kb
+
+# File storage
+# entries_dir: Auto-generated as {data_dir}/entries
+# vector_db_path: Auto-generated as {data_dir}/vectors
+
+# Vector search settings
+embedding_model: all-MiniLM-L6-v2  # Lightweight model for development
+semantic_search_enabled: true
+fts_enabled: true
+
+# Git version control
+git_enabled: true
+git_auto_commit: true
+# git_remote: git@github.com:yourusername/kb-data.git
+
+# Encryption (optional - for sensitive data)
+encryption_enabled: false
+# master_key_path: ~/.temporal-kb/master.key
+
+# API settings
+api_host: localhost
+api_port: 8000
+api_cors_origins:
+  - http://localhost:3000
+  - http://localhost:5173  # Vite dev server
+
+# Authentication (leave empty for development)
+api_keys: []
+# jwt_secret: your-secret-key-here
+
+# Logging
+log_level: DEBUG  # DEBUG, INFO, WARNING, ERROR
+# log_file: ~/.temporal-kb/logs/kb.log
+
+# Development-specific settings
+debug: true
