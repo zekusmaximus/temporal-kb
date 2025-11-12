@@ -15,7 +15,7 @@ class Config(BaseSettings):
     db_path: Optional[Path] = None
     postgres_url: Optional[str] = Field(
         default=None,
-        description="PostgreSQL connection string (if using PostgreSQL instead of SQLite)"
+        description="PostgreSQL connection string (if using PostgreSQL instead of SQLite)",
     )
 
     # File storage
@@ -57,7 +57,6 @@ class Config(BaseSettings):
         env_prefix = "KB_"
         env_file = ".env"
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -85,11 +84,13 @@ class Config(BaseSettings):
     def to_yaml(self, path: Path):
         """Save configuration to YAML file"""
         data = self.model_dump(exclude_none=True)
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             yaml.dump(data, f, default_flow_style=False)
+
 
 # Global config instance
 _config: Optional[Config] = None
+
 
 def init_config(config_path: Optional[Path] = None) -> Config:
     """Initialize configuration"""
@@ -104,6 +105,7 @@ def init_config(config_path: Optional[Path] = None) -> Config:
         _config.to_yaml(default_config_path)
 
     return _config
+
 
 def get_config() -> Config:
     """Get the global configuration instance"""

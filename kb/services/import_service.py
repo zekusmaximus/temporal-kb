@@ -27,10 +27,10 @@ class ImportService:
 
         # Only include importers that are implemented
         importers = {
-            'email': EmailImporter,
-            'markdown': MarkdownImporter,
-            'browser': BrowserHistoryImporter,
-            'chat': ChatExportImporter,
+            "email": EmailImporter,
+            "markdown": MarkdownImporter,
+            "browser": BrowserHistoryImporter,
+            "chat": ChatExportImporter,
         }
 
         importer_class = importers.get(importer_type)

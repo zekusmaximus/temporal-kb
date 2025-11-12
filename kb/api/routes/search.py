@@ -14,6 +14,7 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 def get_search_service(db: Session = Depends(get_session)):
     return SearchService(db)
 
@@ -29,7 +30,7 @@ async def search_entries(
     limit: int = Query(50, ge=1, le=500, description="Maximum results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
     search_service: SearchService = Depends(get_search_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Search entries with filters
@@ -52,7 +53,7 @@ async def search_entries(
         date_from=date_from,
         date_to=date_to,
         limit=limit,
-        offset=offset
+        offset=offset,
     )
 
     return [
@@ -71,7 +72,7 @@ async def search_entries(
             is_public=entry.is_public,
             tags=[tag.name for tag in entry.tags],
             projects=[proj.name for proj in entry.projects],
-            version_count=len(entry.versions)
+            version_count=len(entry.versions),
         )
         for entry in entries
     ]
@@ -81,7 +82,7 @@ async def search_entries(
 async def semantic_search(
     q: str = Query(..., description="Search query"),
     limit: int = Query(10, ge=1, le=100, description="Maximum results"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Semantic search using vector embeddings
@@ -93,10 +94,8 @@ async def semantic_search(
 
     if not config.semantic_search_enabled:
         from fastapi import HTTPException
-        raise HTTPException(
-            status_code=503,
-            detail="Semantic search is not enabled"
-        )
+
+        raise HTTPException(status_code=503, detail="Semantic search is not enabled")
 
     vector_store = VectorStore(config.vector_db_path)
     results = vector_store.search(q, limit=limit)
@@ -104,35 +103,38 @@ async def semantic_search(
     # Fetch full entries
     if results:
         from ...core.models import Entry
+
         db = next(get_session())
 
-        entry_ids = [r['id'] for r in results]
+        entry_ids = [r["id"] for r in results]
         entries = db.query(Entry).filter(Entry.id.in_(entry_ids)).all()
         entries_dict = {e.id: e for e in entries}
 
         # Combine with similarity scores
         response = []
         for result in results:
-            if result['id'] in entries_dict:
-                entry = entries_dict[result['id']]
-                response.append({
-                    'entry': EntryResponse(
-                        id=entry.id,
-                        created_at=entry.created_at,
-                        updated_at=entry.updated_at,
-                        entry_type=entry.entry_type,
-                        title=entry.title,
-                        content=entry.content[:500],  # Truncate for API
-                        source=entry.source,
-                        word_count=entry.word_count,
-                        file_path=entry.file_path,
-                        is_public=entry.is_public,
-                        tags=[tag.name for tag in entry.tags],
-                        projects=[proj.name for proj in entry.projects],
-                        version_count=len(entry.versions)
-                    ),
-                    'similarity_score': result['similarity']
-                })
+            if result["id"] in entries_dict:
+                entry = entries_dict[result["id"]]
+                response.append(
+                    {
+                        "entry": EntryResponse(
+                            id=entry.id,
+                            created_at=entry.created_at,
+                            updated_at=entry.updated_at,
+                            entry_type=entry.entry_type,
+                            title=entry.title,
+                            content=entry.content[:500],  # Truncate for API
+                            source=entry.source,
+                            word_count=entry.word_count,
+                            file_path=entry.file_path,
+                            is_public=entry.is_public,
+                            tags=[tag.name for tag in entry.tags],
+                            projects=[proj.name for proj in entry.projects],
+                            version_count=len(entry.versions),
+                        ),
+                        "similarity_score": result["similarity"],
+                    }
+                )
 
         return response
 
@@ -144,14 +146,11 @@ async def recent_entries(
     limit: int = Query(20, ge=1, le=100, description="Maximum results"),
     entry_types: Optional[List[str]] = Query(None, description="Filter by entry types"),
     search_service: SearchService = Depends(get_search_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get most recently updated entries"""
 
-    entries = search_service.get_recent_entries(
-        limit=limit,
-        entry_types=entry_types
-    )
+    entries = search_service.get_recent_entries(limit=limit, entry_types=entry_types)
 
     return [
         EntryResponse(
@@ -165,7 +164,7 @@ async def recent_entries(
             word_count=entry.word_count,
             tags=[tag.name for tag in entry.tags],
             projects=[proj.name for proj in entry.projects],
-            version_count=len(entry.versions)
+            version_count=len(entry.versions),
         )
         for entry in entries
     ]
@@ -174,7 +173,7 @@ async def recent_entries(
 @router.get("/orphaned", response_model=List[EntryResponse])
 async def orphaned_entries(
     search_service: SearchService = Depends(get_search_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Find entries with no tags, projects, or links"""
 
@@ -192,7 +191,7 @@ async def orphaned_entries(
             word_count=entry.word_count,
             tags=[],
             projects=[],
-            version_count=len(entry.versions)
+            version_count=len(entry.versions),
         )
         for entry in entries
     ]

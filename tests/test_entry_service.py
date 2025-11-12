@@ -25,7 +25,7 @@ def temp_dir():
 @pytest.fixture
 def db_session():
     """Create an in-memory SQLite database for testing"""
-    engine = create_engine('sqlite:///:memory:')
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -56,7 +56,7 @@ class TestEntryService:
             entry_type=EntryType.NOTE,
             source="manual",
             tags=["test", "example"],
-            projects=[]
+            projects=[],
         )
 
         entry = entry_service.create_entry(entry_data)
@@ -72,10 +72,7 @@ class TestEntryService:
         """Test retrieving an entry"""
         # Create entry first
         entry_data = EntryCreate(
-            title="Get Test",
-            content="Content",
-            entry_type=EntryType.NOTE,
-            source="manual"
+            title="Get Test", content="Content", entry_type=EntryType.NOTE, source="manual"
         )
         created_entry = entry_service.create_entry(entry_data)
 
@@ -98,16 +95,14 @@ class TestEntryService:
             title="Original Title",
             content="Original content",
             entry_type=EntryType.NOTE,
-            source="manual"
+            source="manual",
         )
         entry = entry_service.create_entry(entry_data)
 
         # Update it
         from kb.core.schemas import EntryUpdate
-        update_data = EntryUpdate(
-            title="Updated Title",
-            content="Updated content"
-        )
+
+        update_data = EntryUpdate(title="Updated Title", content="Updated content")
 
         updated_entry = entry_service.update_entry(entry.id, update_data)
 
@@ -119,10 +114,7 @@ class TestEntryService:
         """Test deleting an entry"""
         # Create entry
         entry_data = EntryCreate(
-            title="To Delete",
-            content="Content",
-            entry_type=EntryType.NOTE,
-            source="manual"
+            title="To Delete", content="Content", entry_type=EntryType.NOTE, source="manual"
         )
         entry = entry_service.create_entry(entry_data)
         entry_id = entry.id
@@ -133,7 +125,7 @@ class TestEntryService:
 
         # Verify it's gone (or soft-deleted)
         deleted_entry = entry_service.get_entry(entry_id)
-        assert deleted_entry is None or hasattr(deleted_entry, 'deleted_at')
+        assert deleted_entry is None or hasattr(deleted_entry, "deleted_at")
 
     def test_list_entries(self, entry_service):
         """Test listing entries with pagination"""
@@ -143,7 +135,7 @@ class TestEntryService:
                 title=f"Entry {i}",
                 content=f"Content {i}",
                 entry_type=EntryType.NOTE,
-                source="manual"
+                source="manual",
             )
             entry_service.create_entry(entry_data)
 
@@ -158,7 +150,7 @@ class TestEntryService:
             content="Content",
             entry_type=EntryType.NOTE,
             source="manual",
-            tags=["python", "testing", "automation"]
+            tags=["python", "testing", "automation"],
         )
 
         entry = entry_service.create_entry(entry_data)
@@ -173,10 +165,7 @@ class TestEntryService:
         """Test that word count is calculated correctly"""
         content = "This is a test sentence with exactly ten words here."
         entry_data = EntryCreate(
-            title="Word Count Test",
-            content=content,
-            entry_type=EntryType.NOTE,
-            source="manual"
+            title="Word Count Test", content=content, entry_type=EntryType.NOTE, source="manual"
         )
 
         entry = entry_service.create_entry(entry_data)

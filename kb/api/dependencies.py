@@ -15,7 +15,7 @@ class APIKey:
     def __init__(self):
         self.config = get_config()
         # In production, load from secure storage
-        self.valid_keys = set(self.config.api_keys if hasattr(self.config, 'api_keys') else [])
+        self.valid_keys = set(self.config.api_keys if hasattr(self.config, "api_keys") else [])
 
     def __call__(self, x_api_key: Optional[str] = Header(None)):
         # For local development, allow without API key
@@ -24,8 +24,7 @@ class APIKey:
 
         if not x_api_key or x_api_key not in self.valid_keys:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or missing API key"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key"
             )
 
         return x_api_key

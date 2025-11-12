@@ -13,6 +13,7 @@ from .base import ImporterBase
 
 logger = logging.getLogger(__name__)
 
+
 class EmailImporter(ImporterBase):
     """Import emails from IMAP servers (Gmail, Outlook, etc.)"""
 
@@ -25,7 +26,7 @@ class EmailImporter(ImporterBase):
         since_date: Optional[datetime] = None,
         labels: Optional[List[str]] = None,
         sender_filter: Optional[str] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> Dict[str, Any]:
         """
         Import emails from IMAP server
@@ -44,12 +45,7 @@ class EmailImporter(ImporterBase):
             Import statistics
         """
 
-        stats = {
-            'emails_found': 0,
-            'emails_imported': 0,
-            'emails_skipped': 0,
-            'errors': []
-        }
+        stats = {"emails_found": 0, "emails_imported": 0, "emails_skipped": 0, "errors": []}
 
         try:
             # Connect to IMAP server
@@ -60,29 +56,29 @@ class EmailImporter(ImporterBase):
             mail.select(folder)
 
             # Build search criteria
-            search_criteria = ['ALL']
+            search_criteria = ["ALL"]
 
             if since_date:
                 date_str = since_date.strftime("%d-%b-%Y")
-                search_criteria = [f'SINCE {date_str}']
+                search_criteria = [f"SINCE {date_str}"]
 
             if sender_filter:
                 search_criteria.append(f'FROM "{sender_filter}"')
 
             # Gmail labels
-            if labels and 'gmail' in source.lower():
+            if labels and "gmail" in source.lower():
                 for label in labels:
                     search_criteria.append(f'X-GM-LABELS "{label}"')
 
             # Search
-            search_str = ' '.join(search_criteria)
+            search_str = " ".join(search_criteria)
             status, messages = mail.search(None, search_str)
 
-            if status != 'OK':
+            if status != "OK":
                 raise Exception("Failed to search emails")
 
             email_ids = messages[0].split()
-            stats['emails_found'] = len(email_ids)
+            stats["emails_found"] = len(email_ids)
 
             # Limit results
             email_ids = email_ids[-limit:] if len(email_ids) > limit else email_ids
@@ -91,10 +87,10 @@ class EmailImporter(ImporterBase):
             for email_id in email_ids:
                 try:
                     # Fetch email
-                    status, msg_data = mail.fetch(email_id, '(RFC822)')
+                    status, msg_data = mail.fetch(email_id, "(RFC822)")
 
-                    if status != 'OK':
-                        stats['emails_skipped'] += 1
+                    if status != "OK":
+                        stats["emails_skipped"] += 1
                         continue
 
                     # Parse email
@@ -102,9 +98,9 @@ class EmailImporter(ImporterBase):
                     email_message = BytesParser(policy=default).parsebytes(raw_email)
 
                     # Extract data
-                    subject = email_message['subject'] or "No Subject"
-                    sender = email_message['from']
-                    date_str = email_message['date']
+                    subject = email_message["subject"] or "No Subject"
+                    sender = email_message["from"]
+                    date_str = email_message["date"]
                     email_date = email.utils.parsedate_to_datetime(date_str)
 
                     # Get body
@@ -125,21 +121,21 @@ class EmailImporter(ImporterBase):
 
                     # Source metadata
                     source_metadata = {
-                        'sender': sender,
-                        'subject': subject,
-                        'date': email_date.isoformat(),
-                        'email_id': email_id.decode(),
-                        'folder': folder
+                        "sender": sender,
+                        "subject": subject,
+                        "date": email_date.isoformat(),
+                        "email_id": email_id.decode(),
+                        "folder": folder,
                     }
 
                     # Determine tags
-                    tags = ['email', 'imported']
+                    tags = ["email", "imported"]
                     if labels:
                         tags.extend(labels)
 
                     # Extract sender domain for additional tagging
-                    if '@' in sender:
-                        domain = sender.split('@')[-1].strip('>')
+                    if "@" in sender:
+                        domain = sender.split("@")[-1].strip(">")
                         tags.append(f"from-{domain.split('.')[0]}")
 
                     # Create entry
@@ -147,19 +143,19 @@ class EmailImporter(ImporterBase):
                         title=title,
                         content=content,
                         entry_type=EntryType.NOTE,
-                        source='email_import',
+                        source="email_import",
                         source_metadata=source_metadata,
-                        tags=tags
+                        tags=tags,
                     )
 
                     if entry:
-                        stats['emails_imported'] += 1
+                        stats["emails_imported"] += 1
                     else:
-                        stats['emails_skipped'] += 1
+                        stats["emails_skipped"] += 1
 
                 except Exception as e:
-                    stats['emails_skipped'] += 1
-                    stats['errors'].append(f"Email {email_id}: {str(e)}")
+                    stats["emails_skipped"] += 1
+                    stats["errors"].append(f"Email {email_id}: {str(e)}")
                     logger.error(f"Failed to import email {email_id}: {e}")
 
             # Cleanup
@@ -167,7 +163,7 @@ class EmailImporter(ImporterBase):
             mail.logout()
 
         except Exception as e:
-            stats['errors'].append(f"Connection error: {str(e)}")
+            stats["errors"].append(f"Connection error: {str(e)}")
             logger.error(f"Email import failed: {e}")
 
         return stats

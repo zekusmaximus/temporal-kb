@@ -14,8 +14,9 @@ def index():
     """Manage search indexes"""
     pass
 
+
 @index.command()
-@click.option('--force', '-f', is_flag=True, help='Force rebuild without confirmation')
+@click.option("--force", "-f", is_flag=True, help="Force rebuild without confirmation")
 def rebuild(force):
     """Rebuild vector search index
 
@@ -30,7 +31,7 @@ def rebuild(force):
         if not confirm_action(
             "[yellow]Rebuild entire vector index?[/yellow]\n"
             "This may take several minutes for large knowledge bases.",
-            default=False
+            default=False,
         ):
             print_warning("Index rebuild cancelled")
             return
@@ -52,6 +53,7 @@ def rebuild(force):
         print_error(f"Failed to rebuild index: {str(e)}")
         raise
 
+
 @index.command()
 def stats():
     """Show index statistics"""
@@ -63,6 +65,7 @@ def stats():
         # Database stats
         with db.session_scope() as session:
             from ...services.search_service import SearchService
+
             search_service = SearchService(session)
 
             total_entries = session.query(Entry).count()
@@ -87,8 +90,8 @@ def stats():
         table.add_row("Orphaned Entries", str(orphaned))
 
         if vector_stats:
-            table.add_row("Vector Index Entries", str(vector_stats['entry_count']))
-            table.add_row("Embedding Model", vector_stats['model_name'])
+            table.add_row("Vector Index Entries", str(vector_stats["entry_count"]))
+            table.add_row("Embedding Model", vector_stats["model_name"])
         else:
             table.add_row("Vector Index", "[red]Disabled[/red]")
 
@@ -104,9 +107,10 @@ def stats():
         print_error(f"Failed to get stats: {str(e)}")
         raise
 
+
 @index.command()
-@click.option('--entry-id', help='Index specific entry')
-@click.option('--all', 'index_all', is_flag=True, help='Index all entries')
+@click.option("--entry-id", help="Index specific entry")
+@click.option("--all", "index_all", is_flag=True, help="Index all entries")
 def update(entry_id, index_all):
     """Update vector index for specific entries"""
 

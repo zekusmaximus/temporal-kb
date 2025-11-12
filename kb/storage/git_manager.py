@@ -9,6 +9,7 @@ from git import Actor, Repo
 
 logger = logging.getLogger(__name__)
 
+
 class GitManager:
     """
     Manages Git operations for knowledge base version control
@@ -100,7 +101,7 @@ vectors/
         message: str,
         author_name: Optional[str] = None,
         author_email: Optional[str] = None,
-        files: Optional[List[str]] = None
+        files: Optional[List[str]] = None,
     ) -> bool:
         """
         Commit changes to Git
@@ -150,9 +151,7 @@ vectors/
             return False
 
     def get_history(
-        self,
-        max_count: int = 50,
-        file_path: Optional[str] = None
+        self, max_count: int = 50, file_path: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Get commit history
@@ -178,14 +177,16 @@ vectors/
                 commit_iter = self.repo.iter_commits(max_count=max_count)
 
             for commit in commit_iter:
-                commits.append({
-                    'sha': commit.hexsha,
-                    'short_sha': commit.hexsha[:7],
-                    'message': commit.message.strip(),
-                    'author': str(commit.author),
-                    'date': datetime.fromtimestamp(commit.committed_date),
-                    'files_changed': len(commit.stats.files)
-                })
+                commits.append(
+                    {
+                        "sha": commit.hexsha,
+                        "short_sha": commit.hexsha[:7],
+                        "message": commit.message.strip(),
+                        "author": str(commit.author),
+                        "date": datetime.fromtimestamp(commit.committed_date),
+                        "files_changed": len(commit.stats.files),
+                    }
+                )
 
             return commits
 
@@ -197,11 +198,7 @@ vectors/
         """Get commit history for a specific file"""
         return self.get_history(file_path=file_path)
 
-    def get_diff(
-        self,
-        commit_sha: Optional[str] = None,
-        file_path: Optional[str] = None
-    ) -> str:
+    def get_diff(self, commit_sha: Optional[str] = None, file_path: Optional[str] = None) -> str:
         """
         Get diff for a commit or current changes
 
@@ -377,8 +374,8 @@ vectors/
                 "latest_commit": {
                     "sha": self.repo.head.commit.hexsha[:7],
                     "message": self.repo.head.commit.message.strip(),
-                    "date": datetime.fromtimestamp(self.repo.head.commit.committed_date)
-                }
+                    "date": datetime.fromtimestamp(self.repo.head.commit.committed_date),
+                },
             }
 
         except Exception as e:

@@ -10,21 +10,26 @@ from rich.table import Table
 
 console = Console()
 
+
 def print_success(message: str):
     """Print success message in green"""
     console.print(f"[bold green]{message}[/bold green]")
+
 
 def print_error(message: str):
     """Print error message in red"""
     console.print(f"[bold red]✗ {message}[/bold red]")
 
+
 def print_warning(message: str):
     """Print warning message in yellow"""
     console.print(f"[bold yellow]⚠ {message}[/bold yellow]")
 
+
 def print_info(message: str):
     """Print info message in blue"""
     console.print(f"[bold blue]ℹ {message}[/bold blue]")
+
 
 def print_entry(entry, show_content: bool = True, show_metadata: bool = True):
     """Display a single entry with rich formatting"""
@@ -54,13 +59,11 @@ def print_entry(entry, show_content: bool = True, show_metadata: bool = True):
 
     # Panel
     panel = Panel(
-        content if show_content else "",
-        title=header,
-        border_style="blue",
-        padding=(1, 2)
+        content if show_content else "", title=header, border_style="blue", padding=(1, 2)
     )
 
     console.print(panel)
+
 
 def print_entries_table(entries: List, show_preview: bool = False):
     """Display entries in a table format"""
@@ -89,11 +92,11 @@ def print_entries_table(entries: List, show_preview: bool = False):
             entry.title[:40],
             entry.entry_type,
             tags or "[dim]none[/dim]",
-            entry.updated_at.strftime('%Y-%m-%d %H:%M')
+            entry.updated_at.strftime("%Y-%m-%d %H:%M"),
         ]
 
         if show_preview:
-            preview = entry.content[:80].replace('\n', ' ')
+            preview = entry.content[:80].replace("\n", " ")
             if len(entry.content) > 80:
                 preview += "..."
             row.append(f"[dim]{preview}[/dim]")
@@ -102,6 +105,7 @@ def print_entries_table(entries: List, show_preview: bool = False):
 
     console.print(table)
     console.print(f"\n[dim]Showing {len(entries)} entries[/dim]")
+
 
 def print_versions_table(versions: List):
     """Display version history in a table"""
@@ -115,12 +119,13 @@ def print_versions_table(versions: List):
     for version in versions:
         table.add_row(
             str(version.version_number),
-            version.changed_at.strftime('%Y-%m-%d %H:%M'),
+            version.changed_at.strftime("%Y-%m-%d %H:%M"),
             version.change_type or "",
-            version.change_summary or "[dim]none[/dim]"
+            version.change_summary or "[dim]none[/dim]",
         )
 
     console.print(table)
+
 
 def print_graph_stats(stats: dict):
     """Display graph statistics"""
@@ -133,6 +138,7 @@ def print_graph_stats(stats: dict):
 
     console.print(table)
 
+
 def prompt_for_editor(initial_content: str = "") -> str:
     """Open system editor for content input"""
     import os
@@ -140,10 +146,10 @@ def prompt_for_editor(initial_content: str = "") -> str:
     import tempfile
 
     # Determine editor
-    editor = os.environ.get('EDITOR', 'vim')
+    editor = os.environ.get("EDITOR", "vim")
 
     # Create temp file
-    with tempfile.NamedTemporaryFile(mode='w+', suffix='.md', delete=False) as tf:
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".md", delete=False) as tf:
         tf.write(initial_content)
         tf.flush()
         temp_path = tf.name
@@ -153,20 +159,23 @@ def prompt_for_editor(initial_content: str = "") -> str:
         subprocess.call([editor, temp_path])
 
         # Read result
-        with open(temp_path, 'r') as f:
+        with open(temp_path, "r") as f:
             content = f.read()
 
         return content
     finally:
         os.unlink(temp_path)
 
+
 def confirm_action(message: str, default: bool = False) -> bool:
     """Prompt user for confirmation"""
     return Confirm.ask(message, default=default)
 
+
 def prompt_text(message: str, default: str = "") -> str:
     """Prompt user for text input"""
     return Prompt.ask(message, default=default)
+
 
 def prompt_choice(message: str, choices: List[str]) -> str:
     """Prompt user to choose from options"""

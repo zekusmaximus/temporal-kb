@@ -11,16 +11,17 @@ from ...storage.file_manager import FileManager
 from ..ui import console, print_error, print_info, print_success, print_warning
 
 
-@click.group(name='import')
+@click.group(name="import")
 def import_data():
     """Import data from various sources"""
     pass
 
+
 @import_data.command()
-@click.argument('source', type=click.Path(exists=True))
-@click.option('--recursive', '-r', is_flag=True, help='Scan subdirectories')
-@click.option('--tag', '-t', multiple=True, help='Add tags to imported entries')
-@click.option('--project', '-p', help='Associate with project')
+@click.argument("source", type=click.Path(exists=True))
+@click.option("--recursive", "-r", is_flag=True, help="Scan subdirectories")
+@click.option("--tag", "-t", multiple=True, help="Add tags to imported entries")
+@click.option("--project", "-p", help="Associate with project")
 def markdown(source, recursive, tag, project):
     """Import markdown files
 
@@ -37,12 +38,12 @@ def markdown(source, recursive, tag, project):
                 file_manager = FileManager()
                 import_service = ImportService(session, file_manager)
 
-                importer = import_service.get_importer('markdown')
+                importer = import_service.get_importer("markdown")
                 stats = importer.import_data(
                     source=Path(source),
                     recursive=recursive,
                     tags=list(tag) if tag else None,
-                    project=project
+                    project=project,
                 )
 
         # Display results
@@ -50,27 +51,28 @@ def markdown(source, recursive, tag, project):
         print_info(f"Files found: {stats['files_found']}")
         print_info(f"Files imported: {stats['files_imported']}")
 
-        if stats['files_skipped'] > 0:
+        if stats["files_skipped"] > 0:
             print_warning(f"Files skipped: {stats['files_skipped']}")
 
-        if stats['errors']:
+        if stats["errors"]:
             print_error("\nErrors:")
-            for error in stats['errors'][:10]:
+            for error in stats["errors"][:10]:
                 console.print(f"  • {error}")
 
     except Exception as e:
         print_error(f"Import failed: {str(e)}")
         raise
 
+
 @import_data.command()
-@click.option('--server', required=True, help='IMAP server (e.g., imap.gmail.com)')
-@click.option('--username', required=True, help='Email address')
-@click.option('--password', required=True, help='App password')
-@click.option('--folder', default='INBOX', help='Email folder')
-@click.option('--since', help='Import emails since date (YYYY-MM-DD)')
-@click.option('--sender', help='Filter by sender email')
-@click.option('--label', multiple=True, help='Gmail labels to filter')
-@click.option('--limit', default=100, help='Maximum emails to import')
+@click.option("--server", required=True, help="IMAP server (e.g., imap.gmail.com)")
+@click.option("--username", required=True, help="Email address")
+@click.option("--password", required=True, help="App password")
+@click.option("--folder", default="INBOX", help="Email folder")
+@click.option("--since", help="Import emails since date (YYYY-MM-DD)")
+@click.option("--sender", help="Filter by sender email")
+@click.option("--label", multiple=True, help="Gmail labels to filter")
+@click.option("--limit", default=100, help="Maximum emails to import")
 def email(server, username, password, folder, since, sender, label, limit):
     """Import emails from IMAP server
 
@@ -86,14 +88,14 @@ def email(server, username, password, folder, since, sender, label, limit):
         # Parse date
         since_date = None
         if since:
-            since_date = datetime.strptime(since, '%Y-%m-%d')
+            since_date = datetime.strptime(since, "%Y-%m-%d")
 
         with console.status(f"[bold blue]Importing emails from {folder}..."):
             with db.session_scope() as session:
                 file_manager = FileManager()
                 import_service = ImportService(session, file_manager)
 
-                importer = import_service.get_importer('email')
+                importer = import_service.get_importer("email")
                 stats = importer.import_data(
                     source=server,
                     username=username,
@@ -102,7 +104,7 @@ def email(server, username, password, folder, since, sender, label, limit):
                     since_date=since_date,
                     labels=list(label) if label else None,
                     sender_filter=sender,
-                    limit=limit
+                    limit=limit,
                 )
 
         # Display results
@@ -110,24 +112,25 @@ def email(server, username, password, folder, since, sender, label, limit):
         print_info(f"Emails found: {stats['emails_found']}")
         print_info(f"Emails imported: {stats['emails_imported']}")
 
-        if stats['emails_skipped'] > 0:
+        if stats["emails_skipped"] > 0:
             print_warning(f"Emails skipped: {stats['emails_skipped']}")
 
-        if stats['errors']:
+        if stats["errors"]:
             print_error("\nErrors:")
-            for error in stats['errors'][:10]:
+            for error in stats["errors"][:10]:
                 console.print(f"  • {error}")
 
     except Exception as e:
         print_error(f"Email import failed: {str(e)}")
         raise
 
+
 @import_data.command()
-@click.argument('source', type=click.Path())
-@click.option('--browser', type=click.Choice(['chrome', 'firefox', 'safari']), default='chrome')
-@click.option('--since', help='Import history since date (YYYY-MM-DD)')
-@click.option('--url-filter', help='Filter URLs containing text')
-@click.option('--limit', default=500, help='Maximum visits to import')
+@click.argument("source", type=click.Path())
+@click.option("--browser", type=click.Choice(["chrome", "firefox", "safari"]), default="chrome")
+@click.option("--since", help="Import history since date (YYYY-MM-DD)")
+@click.option("--url-filter", help="Filter URLs containing text")
+@click.option("--limit", default=500, help="Maximum visits to import")
 def browser(source, browser, since, url_filter, limit):
     """Import browser history
 
@@ -142,20 +145,20 @@ def browser(source, browser, since, url_filter, limit):
         # Parse date
         since_date = None
         if since:
-            since_date = datetime.strptime(since, '%Y-%m-%d')
+            since_date = datetime.strptime(since, "%Y-%m-%d")
 
         with console.status(f"[bold blue]Importing {browser} history..."):
             with db.session_scope() as session:
                 file_manager = FileManager()
                 import_service = ImportService(session, file_manager)
 
-                importer = import_service.get_importer('browser')
+                importer = import_service.get_importer("browser")
                 stats = importer.import_data(
                     source=source,
                     browser=browser,
                     since_date=since_date,
                     url_filter=url_filter,
-                    limit=limit
+                    limit=limit,
                 )
 
         # Display results
@@ -163,22 +166,23 @@ def browser(source, browser, since, url_filter, limit):
         print_info(f"Visits found: {stats['visits_found']}")
         print_info(f"Visits imported: {stats['visits_imported']}")
 
-        if stats['visits_skipped'] > 0:
+        if stats["visits_skipped"] > 0:
             print_warning(f"Visits skipped: {stats['visits_skipped']}")
 
-        if stats['errors']:
+        if stats["errors"]:
             print_error("\nErrors:")
-            for error in stats['errors'][:5]:
+            for error in stats["errors"][:5]:
                 console.print(f"  • {error}")
 
     except Exception as e:
         print_error(f"Browser import failed: {str(e)}")
         raise
 
+
 @import_data.command()
-@click.argument('source', type=click.Path(exists=True))
-@click.option('--format', type=click.Choice(['auto', 'claude', 'chatgpt']), default='auto')
-@click.option('--tag', '-t', multiple=True, help='Add tags to imported chats')
+@click.argument("source", type=click.Path(exists=True))
+@click.option("--format", type=click.Choice(["auto", "claude", "chatgpt"]), default="auto")
+@click.option("--tag", "-t", multiple=True, help="Add tags to imported chats")
 def chat(source, format, tag):
     """Import chat conversation exports
 
@@ -195,11 +199,9 @@ def chat(source, format, tag):
                 file_manager = FileManager()
                 import_service = ImportService(session, file_manager)
 
-                importer = import_service.get_importer('chat')
+                importer = import_service.get_importer("chat")
                 stats = importer.import_data(
-                    source=Path(source),
-                    chat_format=format,
-                    tags=list(tag) if tag else None
+                    source=Path(source), chat_format=format, tags=list(tag) if tag else None
                 )
 
         # Display results
@@ -207,15 +209,14 @@ def chat(source, format, tag):
         print_info(f"Conversations found: {stats['conversations_found']}")
         print_info(f"Conversations imported: {stats['conversations_imported']}")
 
-        if stats['conversations_skipped'] > 0:
+        if stats["conversations_skipped"] > 0:
             print_warning(f"Conversations skipped: {stats['conversations_skipped']}")
 
-        if stats['errors']:
+        if stats["errors"]:
             print_error("\nErrors:")
-            for error in stats['errors'][:10]:
+            for error in stats["errors"][:10]:
                 console.print(f"  • {error}")
 
     except Exception as e:
         print_error(f"Chat import failed: {str(e)}")
         raise
-

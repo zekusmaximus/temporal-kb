@@ -20,27 +20,46 @@ from ..ui import (
 
 # kb/cli/commands/search.py (enhanced)
 
+
 @click.command()
-@click.argument('query', required=False)
-@click.option('--semantic', '-s', is_flag=True, help='Use semantic search')
-@click.option('--hybrid', is_flag=True, help='Use hybrid search (semantic + keyword)')
-@click.option('--similar-to', help='Find entries similar to this entry ID')
-@click.option('--type', 'entry_types', multiple=True,
-              type=click.Choice([t.value for t in EntryType]),
-              help='Filter by entry type')
-@click.option('--tag', '-t', 'tags', multiple=True, help='Filter by tags')
-@click.option('--project', '-p', 'projects', multiple=True, help='Filter by projects')
-@click.option('--from', 'date_from', help='From date (YYYY-MM-DD)')
-@click.option('--to', 'date_to', help='To date (YYYY-MM-DD)')
-@click.option('--limit', '-n', default=50, help='Max results')
-@click.option('--show-content', '-c', is_flag=True, help='Show full content')
-@click.option('--show-scores', is_flag=True, help='Show relevance scores')
-@click.option('--recent', '-r', type=int, help='Show N most recent entries')
-@click.option('--today', is_flag=True, help='Show entries from today')
-@click.option('--orphaned', is_flag=True, help='Find orphaned entries (no tags/links)')
-def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
-           date_from, date_to, limit, show_content, show_scores, recent,
-           today, orphaned):
+@click.argument("query", required=False)
+@click.option("--semantic", "-s", is_flag=True, help="Use semantic search")
+@click.option("--hybrid", is_flag=True, help="Use hybrid search (semantic + keyword)")
+@click.option("--similar-to", help="Find entries similar to this entry ID")
+@click.option(
+    "--type",
+    "entry_types",
+    multiple=True,
+    type=click.Choice([t.value for t in EntryType]),
+    help="Filter by entry type",
+)
+@click.option("--tag", "-t", "tags", multiple=True, help="Filter by tags")
+@click.option("--project", "-p", "projects", multiple=True, help="Filter by projects")
+@click.option("--from", "date_from", help="From date (YYYY-MM-DD)")
+@click.option("--to", "date_to", help="To date (YYYY-MM-DD)")
+@click.option("--limit", "-n", default=50, help="Max results")
+@click.option("--show-content", "-c", is_flag=True, help="Show full content")
+@click.option("--show-scores", is_flag=True, help="Show relevance scores")
+@click.option("--recent", "-r", type=int, help="Show N most recent entries")
+@click.option("--today", is_flag=True, help="Show entries from today")
+@click.option("--orphaned", is_flag=True, help="Find orphaned entries (no tags/links)")
+def search(
+    query,
+    semantic,
+    hybrid,
+    similar_to,
+    entry_types,
+    tags,
+    projects,
+    date_from,
+    date_to,
+    limit,
+    show_content,
+    show_scores,
+    recent,
+    today,
+    orphaned,
+):
     """Search your knowledge base with multiple search modes
 
     Examples:
@@ -88,6 +107,7 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
                     return
 
                 from ...storage.vector_store import VectorStore
+
                 vector_store = VectorStore(config.vector_db_path)
 
                 with console.status("[bold blue]Finding similar entries..."):
@@ -95,10 +115,12 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
 
                 if results:
                     # Get full entries
-                    entry_ids = [r['id'] for r in results]
+                    entry_ids = [r["id"] for r in results]
                     entries = session.query(Entry).filter(Entry.id.in_(entry_ids)).all()
                     entries_dict = {e.id: e for e in entries}
-                    sorted_entries = [entries_dict[r['id']] for r in results if r['id'] in entries_dict]
+                    sorted_entries = [
+                        entries_dict[r["id"]] for r in results if r["id"] in entries_dict
+                    ]
 
                     print_entries_table(sorted_entries, show_preview=True)
 
@@ -121,16 +143,19 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
                     return
 
                 from ...storage.vector_store import VectorStore
+
                 vector_store = VectorStore(config.vector_db_path)
 
                 with console.status("[bold blue]Performing semantic search..."):
                     results = vector_store.search(query, limit=limit)
 
                 if results:
-                    entry_ids = [r['id'] for r in results]
+                    entry_ids = [r["id"] for r in results]
                     entries = session.query(Entry).filter(Entry.id.in_(entry_ids)).all()
                     entries_dict = {e.id: e for e in entries}
-                    sorted_entries = [entries_dict[r['id']] for r in results if r['id'] in entries_dict]
+                    sorted_entries = [
+                        entries_dict[r["id"]] for r in results if r["id"] in entries_dict
+                    ]
 
                     print_entries_table(sorted_entries, show_preview=True)
 
@@ -152,6 +177,7 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
                     return
 
                 from ...storage.vector_store import VectorStore
+
                 vector_store = VectorStore(config.vector_db_path)
 
                 with console.status("[bold blue]Performing hybrid search..."):
@@ -160,7 +186,7 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
                         vector_store=vector_store,
                         limit=limit,
                         entry_types=list(entry_types) if entry_types else None,
-                        tags=list(tags) if tags else None
+                        tags=list(tags) if tags else None,
                     )
 
                 if entries:
@@ -172,8 +198,7 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
             # Handle recent entries
             elif recent:
                 entries = search_service.get_recent_entries(
-                    limit=recent,
-                    entry_types=list(entry_types) if entry_types else None
+                    limit=recent, entry_types=list(entry_types) if entry_types else None
                 )
 
                 if entries:
@@ -190,7 +215,7 @@ def search(query, semantic, hybrid, similar_to, entry_types, tags, projects,
                     projects=list(projects) if projects else None,
                     date_from=date_from,
                     date_to=date_to,
-                    limit=limit
+                    limit=limit,
                 )
 
                 if entries:

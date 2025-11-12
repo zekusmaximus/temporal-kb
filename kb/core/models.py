@@ -18,9 +18,11 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
+
 def generate_id(prefix: str = "ent") -> str:
     """Generate prefixed UUID for easier debugging"""
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
+
 
 class Entry(Base):
     __tablename__ = "entries"
@@ -49,13 +51,13 @@ class Entry(Base):
         "EntryLink",
         foreign_keys="EntryLink.from_entry_id",
         back_populates="from_entry",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     incoming_links = relationship(
         "EntryLink",
         foreign_keys="EntryLink.to_entry_id",
         back_populates="to_entry",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     embedding = relationship("Embedding", back_populates="entry", uselist=False)
 
@@ -78,9 +80,7 @@ class EntryVersion(Base):
 
     entry = relationship("Entry", back_populates="versions")
 
-    __table_args__ = (
-        UniqueConstraint('entry_id', 'version_number', name='uq_entry_version'),
-    )
+    __table_args__ = (UniqueConstraint("entry_id", "version_number", name="uq_entry_version"),)
 
 
 class Tag(Base):
@@ -117,11 +117,13 @@ class EntryLink(Base):
     created_at = Column(DateTime, default=func.now())
     is_automatic = Column(Boolean, default=False)
 
-    from_entry = relationship("Entry", foreign_keys=[from_entry_id], back_populates="outgoing_links")
+    from_entry = relationship(
+        "Entry", foreign_keys=[from_entry_id], back_populates="outgoing_links"
+    )
     to_entry = relationship("Entry", foreign_keys=[to_entry_id], back_populates="incoming_links")
 
     __table_args__ = (
-        UniqueConstraint('from_entry_id', 'to_entry_id', 'link_type', name='uq_entry_link'),
+        UniqueConstraint("from_entry_id", "to_entry_id", "link_type", name="uq_entry_link"),
     )
 
 

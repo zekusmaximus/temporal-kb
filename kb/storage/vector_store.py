@@ -12,6 +12,7 @@ from ..core.models import Entry
 
 logger = logging.getLogger(__name__)
 
+
 class VectorStore:
     """
     Manages vector embeddings for semantic search using ChromaDB
@@ -21,7 +22,7 @@ class VectorStore:
         self,
         persist_directory: Path,
         model_name: str = "all-MiniLM-L6-v2",
-        collection_name: str = "entries"
+        collection_name: str = "entries",
     ):
         """
         Initialize vector store
@@ -38,16 +39,12 @@ class VectorStore:
         # Initialize ChromaDB client
         self.client = chromadb.PersistentClient(
             path=str(persist_directory),
-            settings=Settings(
-                anonymized_telemetry=False,
-                allow_reset=True
-            )
+            settings=Settings(anonymized_telemetry=False, allow_reset=True),
         )
 
         # Get or create collection
         self.collection = self.client.get_or_create_collection(
-            name=collection_name,
-            metadata={"hnsw:space": "cosine"}  # Use cosine similarity
+            name=collection_name, metadata={"hnsw:space": "cosine"}  # Use cosine similarity
         )
 
         # Load sentence transformer model
@@ -81,15 +78,14 @@ class VectorStore:
                 "updated_at": entry.updated_at.isoformat(),
                 "word_count": entry.word_count,
                 "tags": ",".join([tag.name for tag in entry.tags]) if entry.tags else "",
-                "projects": ",".join([proj.name for proj in entry.projects]) if entry.projects else ""
+                "projects": (
+                    ",".join([proj.name for proj in entry.projects]) if entry.projects else ""
+                ),
             }
 
             # Add to collection (upsert)
             self.collection.upsert(
-                ids=[entry.id],
-                embeddings=[embedding],
-                documents=[text],
-                metadatas=[metadata]
+                ids=[entry.id], embeddings=[embedding], documents=[text], metadatas=[metadata]
             )
 
             logger.debug(f"Added entry to vector store: {entry.id}")
@@ -113,7 +109,7 @@ class VectorStore:
         success_count = 0
 
         for i in range(0, len(entries), batch_size):
-            batch = entries[i:i + batch_size]
+            batch = entries[i : i + batch_size]
 
             try:
                 # Prepare batch data
@@ -123,23 +119,28 @@ class VectorStore:
 
                 metadatas = []
                 for entry in batch:
-                    metadatas.append({
-                        "entry_id": entry.id,
-                        "title": entry.title,
-                        "entry_type": entry.entry_type,
-                        "created_at": entry.created_at.isoformat(),
-                        "updated_at": entry.updated_at.isoformat(),
-                        "word_count": entry.word_count,
-                        "tags": ",".join([tag.name for tag in entry.tags]) if entry.tags else "",
-                        "projects": ",".join([proj.name for proj in entry.projects]) if entry.projects else ""
-                    })
+                    metadatas.append(
+                        {
+                            "entry_id": entry.id,
+                            "title": entry.title,
+                            "entry_type": entry.entry_type,
+                            "created_at": entry.created_at.isoformat(),
+                            "updated_at": entry.updated_at.isoformat(),
+                            "word_count": entry.word_count,
+                            "tags": (
+                                ",".join([tag.name for tag in entry.tags]) if entry.tags else ""
+                            ),
+                            "projects": (
+                                ",".join([proj.name for proj in entry.projects])
+                                if entry.projects
+                                else ""
+                            ),
+                        }
+                    )
 
                 # Upsert batch
                 self.collection.upsert(
-                    ids=ids,
-                    embeddings=embeddings,
-                    documents=texts,
-                    metadatas=metadatas
+                    ids=ids, embeddings=embeddings, documents=texts, metadatas=metadatas
                 )
 
                 success_count += len(batch)
@@ -151,10 +152,7 @@ class VectorStore:
         return success_count
 
     def search(
-        self,
-        query: str,
-        limit: int = 10,
-        where: Optional[Dict[str, Any]] = None
+        self, query: str, limit: int = 10, where: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """
         Semantic search using query text
@@ -173,22 +171,23 @@ class VectorStore:
 
             # Search
             results = self.collection.query(
-                query_embeddings=[query_embedding],
-                n_results=limit,
-                where=where
+                query_embeddings=[query_embedding], n_results=limit, where=where
             )
 
             # Format results
             formatted_results = []
-            if results['ids'] and results['ids'][0]:
-                for i, entry_id in enumerate(results['ids'][0]):
-                    formatted_results.append({
-                        'id': entry_id,
-                        'distance': results['distances'][0][i],
-                        'similarity': 1 - results['distances'][0][i],  # Convert distance to similarity
-                        'metadata': results['metadatas'][0][i],
-                        'document': results['documents'][0][i]
-                    })
+            if results["ids"] and results["ids"][0]:
+                for i, entry_id in enumerate(results["ids"][0]):
+                    formatted_results.append(
+                        {
+                            "id": entry_id,
+                            "distance": results["distances"][0][i],
+                            "similarity": 1
+                            - results["distances"][0][i],  # Convert distance to similarity
+                            "metadata": results["metadatas"][0][i],
+                            "document": results["documents"][0][i],
+                        }
+                    )
 
             return formatted_results
 
@@ -197,10 +196,7 @@ class VectorStore:
             return []
 
     def find_similar(
-        self,
-        entry_id: str,
-        limit: int = 10,
-        where: Optional[Dict[str, Any]] = None
+        self, entry_id: str, limit: int = 10, where: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """
         Find entries similar to a given entry
@@ -215,36 +211,35 @@ class VectorStore:
         """
         try:
             # Get the entry's embedding
-            result = self.collection.get(
-                ids=[entry_id],
-                include=["embeddings"]
-            )
+            result = self.collection.get(ids=[entry_id], include=["embeddings"])
 
-            if not result['embeddings']:
+            if not result["embeddings"]:
                 logger.warning(f"Entry {entry_id} not found in vector store")
                 return []
 
-            embedding = result['embeddings'][0]
+            embedding = result["embeddings"][0]
 
             # Search for similar entries
             results = self.collection.query(
                 query_embeddings=[embedding],
                 n_results=limit + 1,  # +1 to exclude the entry itself
-                where=where
+                where=where,
             )
 
             # Format and filter out the original entry
             formatted_results = []
-            if results['ids'] and results['ids'][0]:
-                for i, result_id in enumerate(results['ids'][0]):
+            if results["ids"] and results["ids"][0]:
+                for i, result_id in enumerate(results["ids"][0]):
                     if result_id != entry_id:  # Exclude the query entry itself
-                        formatted_results.append({
-                            'id': result_id,
-                            'distance': results['distances'][0][i],
-                            'similarity': 1 - results['distances'][0][i],
-                            'metadata': results['metadatas'][0][i],
-                            'document': results['documents'][0][i]
-                        })
+                        formatted_results.append(
+                            {
+                                "id": result_id,
+                                "distance": results["distances"][0][i],
+                                "similarity": 1 - results["distances"][0][i],
+                                "metadata": results["metadatas"][0][i],
+                                "document": results["documents"][0][i],
+                            }
+                        )
 
             return formatted_results[:limit]
 
@@ -279,7 +274,7 @@ class VectorStore:
             "collection_name": self.collection_name,
             "entry_count": count,
             "model_name": self.model_name,
-            "persist_directory": str(self.persist_directory)
+            "persist_directory": str(self.persist_directory),
         }
 
     def rebuild_index(self, entries: List[Entry]) -> int:
@@ -298,8 +293,7 @@ class VectorStore:
         # Clear existing collection
         self.client.delete_collection(self.collection_name)
         self.collection = self.client.create_collection(
-            name=self.collection_name,
-            metadata={"hnsw:space": "cosine"}
+            name=self.collection_name, metadata={"hnsw:space": "cosine"}
         )
 
         # Re-index all entries
@@ -320,11 +314,7 @@ class VectorStore:
             Formatted text for embedding
         """
         # Weight title more heavily by including it multiple times
-        text_parts = [
-            entry.title,
-            entry.title,  # Title twice for emphasis
-            entry.content
-        ]
+        text_parts = [entry.title, entry.title, entry.content]  # Title twice for emphasis
 
         # Add tags as keywords
         if entry.tags:

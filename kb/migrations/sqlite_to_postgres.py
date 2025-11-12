@@ -6,10 +6,7 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 
-def migrate_sqlite_to_postgres(
-    sqlite_path: str,
-    postgres_conn_string: str
-):
+def migrate_sqlite_to_postgres(sqlite_path: str, postgres_conn_string: str):
     """
     Migrate SQLite database to PostgreSQL
 
@@ -52,7 +49,7 @@ def migrate_sqlite_to_postgres(
         columns = [description[0] for description in sqlite_cursor.description]
 
         # Prepare INSERT statement for PostgreSQL
-        placeholders = ','.join(['%s'] * len(columns))
+        placeholders = ",".join(["%s"] * len(columns))
         insert_query = f"""
             INSERT INTO {table} ({','.join(columns)})
             VALUES ({placeholders})

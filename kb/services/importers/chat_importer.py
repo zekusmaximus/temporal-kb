@@ -11,15 +11,16 @@ from .base import ImporterBase
 
 logger = logging.getLogger(__name__)
 
+
 class ChatExportImporter(ImporterBase):
     """Import chat conversations from Claude, ChatGPT, etc."""
 
     def import_data(
         self,
         source: Path,
-        chat_format: str = 'auto',
+        chat_format: str = "auto",
         combine_conversations: bool = False,
-        tags: List[str] = None
+        tags: List[str] = None,
     ) -> Dict[str, Any]:
         """
         Import chat exports
@@ -35,10 +36,10 @@ class ChatExportImporter(ImporterBase):
         """
 
         stats = {
-            'conversations_found': 0,
-            'conversations_imported': 0,
-            'conversations_skipped': 0,
-            'errors': []
+            "conversations_found": 0,
+            "conversations_imported": 0,
+            "conversations_skipped": 0,
+            "errors": [],
         }
 
         source_path = Path(source)
@@ -49,46 +50,46 @@ class ChatExportImporter(ImporterBase):
                 files = [source_path]
             else:
                 # Directory of exports
-                files = list(source_path.glob('*.json'))
+                files = list(source_path.glob("*.json"))
 
-            stats['conversations_found'] = len(files)
+            stats["conversations_found"] = len(files)
 
             for file in files:
                 try:
-                    with open(file, 'r', encoding='utf-8') as f:
+                    with open(file, "r", encoding="utf-8") as f:
                         data = json.load(f)
 
                     # Auto-detect format
-                    if chat_format == 'auto':
-                        if 'uuid' in data and 'name' in data:
-                            detected_format = 'claude'
-                        elif 'title' in data and 'mapping' in data:
-                            detected_format = 'chatgpt'
+                    if chat_format == "auto":
+                        if "uuid" in data and "name" in data:
+                            detected_format = "claude"
+                        elif "title" in data and "mapping" in data:
+                            detected_format = "chatgpt"
                         else:
-                            detected_format = 'generic'
+                            detected_format = "generic"
                     else:
                         detected_format = chat_format
 
                     # Parse based on format
-                    if detected_format == 'claude':
+                    if detected_format == "claude":
                         result = self._import_claude_export(data, tags)
-                    elif detected_format == 'chatgpt':
+                    elif detected_format == "chatgpt":
                         result = self._import_chatgpt_export(data, tags)
                     else:
                         result = self._import_generic_export(data, tags)
 
                     if result:
-                        stats['conversations_imported'] += 1
+                        stats["conversations_imported"] += 1
                     else:
-                        stats['conversations_skipped'] += 1
+                        stats["conversations_skipped"] += 1
 
                 except Exception as e:
-                    stats['conversations_skipped'] += 1
-                    stats['errors'].append(f"{file.name}: {str(e)}")
+                    stats["conversations_skipped"] += 1
+                    stats["errors"].append(f"{file.name}: {str(e)}")
                     logger.error(f"Failed to import {file}: {e}")
 
         except Exception as e:
-            stats['errors'].append(f"Import failed: {str(e)}")
+            stats["errors"].append(f"Import failed: {str(e)}")
             logger.error(f"Chat import failed: {e}")
 
         return stats
@@ -97,21 +98,21 @@ class ChatExportImporter(ImporterBase):
         """Import Claude conversation export"""
 
         try:
-            title = data.get('name', 'Untitled Conversation')
-            conversation_id = data.get('uuid', '')
-            created_at = data.get('created_at', '')
-            updated_at = data.get('updated_at', '')
+            title = data.get("name", "Untitled Conversation")
+            conversation_id = data.get("uuid", "")
+            created_at = data.get("created_at", "")
+            updated_at = data.get("updated_at", "")
 
             # Build conversation content
-            messages = data.get('chat_messages', [])
+            messages = data.get("chat_messages", [])
             content_parts = []
 
             for msg in messages:
-                sender = msg.get('sender', 'unknown')
-                text = msg.get('text', '')
-                msg.get('created_at', '')
+                sender = msg.get("sender", "unknown")
+                text = msg.get("text", "")
+                msg.get("created_at", "")
 
-                if sender == 'human':
+                if sender == "human":
                     content_parts.append(f"**You:** {text}\n")
                 else:
                     content_parts.append(f"**Claude:** {text}\n")
@@ -132,14 +133,14 @@ class ChatExportImporter(ImporterBase):
 
             # Create entry
             source_metadata = {
-                'conversation_id': conversation_id,
-                'created_at': created_at,
-                'updated_at': updated_at,
-                'message_count': len(messages),
-                'platform': 'claude'
+                "conversation_id": conversation_id,
+                "created_at": created_at,
+                "updated_at": updated_at,
+                "message_count": len(messages),
+                "platform": "claude",
             }
 
-            entry_tags = ['chat', 'claude', 'imported']
+            entry_tags = ["chat", "claude", "imported"]
             if tags:
                 entry_tags.extend(tags)
 
@@ -147,9 +148,9 @@ class ChatExportImporter(ImporterBase):
                 title=f"Chat: {title}",
                 content=full_content,
                 entry_type=EntryType.CHAT_EXPORT,
-                source='claude_export',
+                source="claude_export",
                 source_metadata=source_metadata,
-                tags=entry_tags
+                tags=entry_tags,
             )
 
             return entry is not None
@@ -162,36 +163,36 @@ class ChatExportImporter(ImporterBase):
         """Import ChatGPT conversation export"""
 
         try:
-            title = data.get('title', 'Untitled Conversation')
-            conversation_id = data.get('id', '')
-            create_time = data.get('create_time', 0)
-            update_time = data.get('update_time', 0)
+            title = data.get("title", "Untitled Conversation")
+            conversation_id = data.get("id", "")
+            create_time = data.get("create_time", 0)
+            update_time = data.get("update_time", 0)
 
-            created_at = datetime.fromtimestamp(create_time).isoformat() if create_time else ''
-            updated_at = datetime.fromtimestamp(update_time).isoformat() if update_time else ''
+            created_at = datetime.fromtimestamp(create_time).isoformat() if create_time else ""
+            updated_at = datetime.fromtimestamp(update_time).isoformat() if update_time else ""
 
             # Parse mapping structure
-            mapping = data.get('mapping', {})
+            mapping = data.get("mapping", {})
             content_parts = []
             message_count = 0
 
             # Build conversation tree
             for _node_id, node in mapping.items():
-                message = node.get('message')
-                if message and message.get('content'):
-                    author = message.get('author', {}).get('role', 'unknown')
-                    content_data = message.get('content', {})
+                message = node.get("message")
+                if message and message.get("content"):
+                    author = message.get("author", {}).get("role", "unknown")
+                    content_data = message.get("content", {})
 
                     if isinstance(content_data, dict):
-                        parts = content_data.get('parts', [])
-                        text = '\n'.join(parts) if parts else ''
+                        parts = content_data.get("parts", [])
+                        text = "\n".join(parts) if parts else ""
                     else:
                         text = str(content_data)
 
                     if text:
-                        if author == 'user':
+                        if author == "user":
                             content_parts.append(f"**You:** {text}\n")
-                        elif author == 'assistant':
+                        elif author == "assistant":
                             content_parts.append(f"**ChatGPT:** {text}\n")
                         message_count += 1
 
@@ -211,14 +212,14 @@ class ChatExportImporter(ImporterBase):
 
             # Create entry
             source_metadata = {
-                'conversation_id': conversation_id,
-                'created_at': created_at,
-                'updated_at': updated_at,
-                'message_count': message_count,
-                'platform': 'chatgpt'
+                "conversation_id": conversation_id,
+                "created_at": created_at,
+                "updated_at": updated_at,
+                "message_count": message_count,
+                "platform": "chatgpt",
             }
 
-            entry_tags = ['chat', 'chatgpt', 'imported']
+            entry_tags = ["chat", "chatgpt", "imported"]
             if tags:
                 entry_tags.extend(tags)
 
@@ -226,9 +227,9 @@ class ChatExportImporter(ImporterBase):
                 title=f"Chat: {title}",
                 content=full_content,
                 entry_type=EntryType.CHAT_EXPORT,
-                source='chatgpt_export',
+                source="chatgpt_export",
                 source_metadata=source_metadata,
-                tags=entry_tags
+                tags=entry_tags,
             )
 
             return entry is not None
@@ -242,13 +243,13 @@ class ChatExportImporter(ImporterBase):
 
         try:
             # Try to extract basic structure
-            title = data.get('title') or data.get('name') or 'Imported Conversation'
-            messages = data.get('messages') or data.get('chat_messages') or []
+            title = data.get("title") or data.get("name") or "Imported Conversation"
+            messages = data.get("messages") or data.get("chat_messages") or []
 
             content_parts = []
             for msg in messages:
-                role = msg.get('role') or msg.get('sender') or 'unknown'
-                text = msg.get('content') or msg.get('text') or ''
+                role = msg.get("role") or msg.get("sender") or "unknown"
+                text = msg.get("content") or msg.get("text") or ""
 
                 content_parts.append(f"**{role.capitalize()}:** {text}\n")
 
@@ -258,7 +259,7 @@ class ChatExportImporter(ImporterBase):
                 return False
 
             # Create entry
-            entry_tags = ['chat', 'imported']
+            entry_tags = ["chat", "imported"]
             if tags:
                 entry_tags.extend(tags)
 
@@ -266,8 +267,8 @@ class ChatExportImporter(ImporterBase):
                 title=f"Chat: {title}",
                 content=content,
                 entry_type=EntryType.CHAT_EXPORT,
-                source='generic_chat_export',
-                tags=entry_tags
+                source="generic_chat_export",
+                tags=entry_tags,
             )
 
             return entry is not None

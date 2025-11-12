@@ -23,14 +23,18 @@ def link():
     """Manage links between entries"""
     pass
 
+
 @link.command()
-@click.argument('from_entry_id')
-@click.argument('to_entry_id')
-@click.option('--type', 'link_type',
-              type=click.Choice([t.value for t in LinkType]),
-              default='references',
-              help='Link type')
-@click.option('--context', '-c', help='Context for the link')
+@click.argument("from_entry_id")
+@click.argument("to_entry_id")
+@click.option(
+    "--type",
+    "link_type",
+    type=click.Choice([t.value for t in LinkType]),
+    default="references",
+    help="Link type",
+)
+@click.option("--context", "-c", help="Context for the link")
 def create(from_entry_id, to_entry_id, link_type, context):
     """Create a link between two entries
 
@@ -50,7 +54,7 @@ def create(from_entry_id, to_entry_id, link_type, context):
                 to_entry_id=to_entry_id,
                 link_type=LinkType(link_type),
                 context=context,
-                is_automatic=False
+                is_automatic=False,
             )
 
             if link:
@@ -62,9 +66,10 @@ def create(from_entry_id, to_entry_id, link_type, context):
         print_error(f"Link creation failed: {str(e)}")
         raise
 
+
 @link.command()
-@click.argument('entry_id')
-@click.option('--min-strength', default=0.5, help='Minimum link strength (0-1)')
+@click.argument("entry_id")
+@click.option("--min-strength", default=0.5, help="Minimum link strength (0-1)")
 def detect(entry_id, min_strength):
     """Detect potential links for an entry
 
@@ -104,10 +109,10 @@ def detect(entry_id, min_strength):
 
             for suggestion in suggestions:
                 table.add_row(
-                    suggestion['to_entry_title'][:40],
-                    suggestion['link_type'].value,
+                    suggestion["to_entry_title"][:40],
+                    suggestion["link_type"].value,
                     f"{suggestion['strength']:.2f}",
-                    suggestion['reason']
+                    suggestion["reason"],
                 )
 
             console.print(table)
@@ -121,8 +126,9 @@ def detect(entry_id, min_strength):
         print_error(f"Link detection failed: {str(e)}")
         raise
 
+
 @link.command()
-@click.option('--min-strength', default=0.6, help='Minimum link strength (0-1)')
+@click.option("--min-strength", default=0.6, help="Minimum link strength (0-1)")
 def auto_all(min_strength):
     """Auto-link all entries
 
@@ -135,7 +141,7 @@ def auto_all(min_strength):
     if not confirm_action(
         "[yellow]Auto-link all entries?[/yellow]\n"
         "This may take several minutes for large knowledge bases.",
-        default=False
+        default=False,
     ):
         print_warning("Auto-linking cancelled")
         return
@@ -152,9 +158,10 @@ def auto_all(min_strength):
         print_error(f"Auto-linking failed: {str(e)}")
         raise
 
+
 @link.command()
-@click.argument('entry_id')
-@click.option('--limit', '-n', default=10, help='Max results')
+@click.argument("entry_id")
+@click.option("--limit", "-n", default=10, help="Max results")
 def related(entry_id, limit):
     """Find entries related to this entry
 
@@ -191,16 +198,14 @@ def related(entry_id, limit):
             table.add_column("Score", width=10, justify="right")
 
             for related_entry, score in related:
-                table.add_row(
-                    related_entry.title[:50],
-                    f"{score:.2f}"
-                )
+                table.add_row(related_entry.title[:50], f"{score:.2f}")
 
             console.print(table)
 
     except Exception as e:
         print_error(f"Related search failed: {str(e)}")
         raise
+
 
 @link.command()
 def stats():
@@ -216,17 +221,18 @@ def stats():
         print_graph_stats(stats)
 
         # Show most connected entries
-        if stats['most_connected']:
+        if stats["most_connected"]:
             console.print("\n[bold cyan]Most Connected Entries:[/bold cyan]")
-            for item in stats['most_connected'][:10]:
+            for item in stats["most_connected"][:10]:
                 console.print(f"  {item['title'][:60]}: {item['link_count']} links")
 
     except Exception as e:
         print_error(f"Failed to get stats: {str(e)}")
         raise
 
+
 @link.command()
-@click.option('--min-size', default=3, help='Minimum cluster size')
+@click.option("--min-size", default=3, help="Minimum cluster size")
 def clusters(min_size):
     """Find clusters of interconnected entries"""
 

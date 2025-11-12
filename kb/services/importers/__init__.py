@@ -7,9 +7,9 @@ from .email_importer import EmailImporter
 from .markdown_importer import MarkdownImporter
 
 __all__ = [
-    'ImporterBase',
-    'MarkdownImporter',
-    'EmailImporter',
-    'BrowserHistoryImporter',
-    'ChatExportImporter',
+    "ImporterBase",
+    "MarkdownImporter",
+    "EmailImporter",
+    "BrowserHistoryImporter",
+    "ChatExportImporter",
 ]

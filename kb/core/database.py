@@ -14,6 +14,7 @@ from .models import Base
 
 logger = logging.getLogger(__name__)
 
+
 class Database:
     def __init__(self, connection_string: str):
         """
@@ -27,7 +28,7 @@ class Database:
         self.connection_string = connection_string
 
         # Determine if SQLite or PostgreSQL
-        self.is_sqlite = connection_string.startswith('sqlite')
+        self.is_sqlite = connection_string.startswith("sqlite")
 
         # Create engine with appropriate settings
         if self.is_sqlite:
@@ -35,7 +36,7 @@ class Database:
                 connection_string,
                 connect_args={"check_same_thread": False},
                 poolclass=StaticPool,
-                echo=False
+                echo=False,
             )
         else:
             # PostgreSQL
@@ -44,14 +45,10 @@ class Database:
                 pool_pre_ping=True,  # Verify connections
                 pool_size=5,
                 max_overflow=10,
-                echo=False
+                echo=False,
             )
 
-        self.SessionLocal = sessionmaker(
-            autocommit=False,
-            autoflush=False,
-            bind=self.engine
-        )
+        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
     def create_tables(self):
         """Create all tables if they don't exist"""
@@ -79,6 +76,7 @@ class Database:
 
 _db: Optional[Database] = None
 
+
 def init_db(connection_string: Optional[str | Path] = None) -> Database:
     """Initialize database with given connection string or from config"""
     global _db
@@ -87,7 +85,7 @@ def init_db(connection_string: Optional[str | Path] = None) -> Database:
         config = get_config()
 
         # Check for PostgreSQL config first
-        if hasattr(config, 'postgres_url') and config.postgres_url:
+        if hasattr(config, "postgres_url") and config.postgres_url:
             connection_string = config.postgres_url
         else:
             # Fall back to SQLite

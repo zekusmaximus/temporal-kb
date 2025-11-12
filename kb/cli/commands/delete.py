@@ -9,8 +9,8 @@ from ..ui import confirm_action, console, print_entry, print_error, print_succes
 
 
 @click.command()
-@click.argument('entry_id')
-@click.option('--force', '-f', is_flag=True, help='Skip confirmation')
+@click.argument("entry_id")
+@click.option("--force", "-f", is_flag=True, help="Skip confirmation")
 def delete(entry_id, force):
     """Delete an entry
 
@@ -40,7 +40,7 @@ def delete(entry_id, force):
                 if not confirm_action(
                     f"[bold red]Delete '{entry.title}'?[/bold red]\n"
                     f"This will delete {len(entry.versions)} versions and cannot be undone.",
-                    default=False
+                    default=False,
                 ):
                     print_warning("Deletion cancelled")
                     return
@@ -53,9 +53,11 @@ def delete(entry_id, force):
 
             # Git commit
             from ...core.config import get_config
+
             config = get_config()
             if config.git_enabled and config.git_auto_commit:
                 from ...storage.git_manager import GitManager
+
                 git_mgr = GitManager(config.data_dir)
                 git_mgr.commit(f"Delete: {entry.title}")
 

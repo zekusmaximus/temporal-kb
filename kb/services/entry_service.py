@@ -34,7 +34,7 @@ class EntryService:
             source_metadata=entry_data.source_metadata,
             vault_id=entry_data.vault_id,
             is_public=entry_data.is_public,
-            word_count=calculate_word_count(entry_data.content)
+            word_count=calculate_word_count(entry_data.content),
         )
 
         self.session.add(entry)
@@ -47,7 +47,7 @@ class EntryService:
             content=entry_data.content,
             content_hash=content_hash,
             change_type="create",
-            change_summary="Initial creation"
+            change_summary="Initial creation",
         )
         self.session.add(version)
 
@@ -90,10 +90,12 @@ class EntryService:
             new_hash = hashlib.sha256(update_data.content.encode()).hexdigest()
             if new_hash != entry.content_hash:
                 # Get latest version number
-                latest_version = self.session.query(EntryVersion)\
-                    .filter(EntryVersion.entry_id == entry_id)\
-                    .order_by(desc(EntryVersion.version_number))\
+                latest_version = (
+                    self.session.query(EntryVersion)
+                    .filter(EntryVersion.entry_id == entry_id)
+                    .order_by(desc(EntryVersion.version_number))
                     .first()
+                )
 
                 new_version_num = (latest_version.version_number + 1) if latest_version else 1
 
@@ -104,7 +106,9 @@ class EntryService:
                     content=update_data.content,
                     content_hash=new_hash,
                     change_type="edit",
-                    change_summary=f"Updated: {', '.join(changes)}" if changes else "Content update"
+                    change_summary=(
+                        f"Updated: {', '.join(changes)}" if changes else "Content update"
+                    ),
                 )
                 self.session.add(version)
 
@@ -153,19 +157,22 @@ class EntryService:
 
     def get_entry_versions(self, entry_id: str) -> List[EntryVersion]:
         """Get all versions of an entry"""
-        return self.session.query(EntryVersion)\
-            .filter(EntryVersion.entry_id == entry_id)\
-            .order_by(desc(EntryVersion.version_number))\
+        return (
+            self.session.query(EntryVersion)
+            .filter(EntryVersion.entry_id == entry_id)
+            .order_by(desc(EntryVersion.version_number))
             .all()
+        )
 
     def get_version_content(self, entry_id: str, version_number: int) -> Optional[str]:
         """Get content from a specific version"""
-        version = self.session.query(EntryVersion)\
+        version = (
+            self.session.query(EntryVersion)
             .filter(
-                EntryVersion.entry_id == entry_id,
-                EntryVersion.version_number == version_number
-            )\
+                EntryVersion.entry_id == entry_id, EntryVersion.version_number == version_number
+            )
             .first()
+        )
 
         return version.content if version else None
 
