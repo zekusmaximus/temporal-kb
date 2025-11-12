@@ -43,12 +43,22 @@ def print_entry(entry, show_content: bool = True, show_metadata: bool = True):
 
     # Tags and projects
     if show_metadata:
-        if entry.tags:
-            tags_str = " ".join([f"[yellow]#{tag.name}[/yellow]" for tag in entry.tags])
-            header += f"\n{tags_str}"
-        if entry.projects:
-            projects_str = " ".join([f"[magenta]@{proj.name}[/magenta]" for proj in entry.projects])
-            header += f"\n{projects_str}"
+        # Access relationships defensively; entries created in a short-lived
+        # session may have detached relationship collections
+        try:
+            if entry.tags:
+                tags_str = " ".join([f"[yellow]#{tag.name}[/yellow]" for tag in entry.tags])
+                header += f"\n{tags_str}"
+        except Exception:
+            pass
+        try:
+            if entry.projects:
+                projects_str = " ".join(
+                    [f"[magenta]@{proj.name}[/magenta]" for proj in entry.projects]
+                )
+                header += f"\n{projects_str}"
+        except Exception:
+            pass
 
     # Content
     content = ""
@@ -83,9 +93,13 @@ def print_entries_table(entries: List, show_preview: bool = False):
         table.add_column("Preview", width=40)
 
     for entry in entries:
-        tags = ", ".join([f"#{tag.name}" for tag in entry.tags[:3]])
-        if len(entry.tags) > 3:
-            tags += f" +{len(entry.tags) - 3}"
+        # Best-effort access to tags even if detached
+        try:
+            tags = ", ".join([f"#{tag.name}" for tag in entry.tags[:3]])
+            if len(entry.tags) > 3:
+                tags += f" +{len(entry.tags) - 3}"
+        except Exception:
+            tags = ""
 
         row = [
             entry.id[:12],

@@ -59,6 +59,11 @@ class EntryService:
         if entry_data.projects:
             self._add_projects(entry, entry_data.projects)
 
+        # Ensure relationships are loaded before the session is closed
+        # so CLI printing and file writes don't trigger lazy loads later
+        _ = [t.name for t in entry.tags]
+        _ = [p.name for p in entry.projects]
+
         # Save to file system
         file_path = self.file_manager.save_entry(entry)
         entry.file_path = str(file_path.relative_to(self.file_manager.entries_dir))
@@ -71,6 +76,15 @@ class EntryService:
     def get_entry(self, entry_id: str) -> Optional[Entry]:
         """Retrieve an entry by ID"""
         return self.session.query(Entry).filter(Entry.id == entry_id).first()
+
+    def list_entries(self, limit: Optional[int] = None, offset: int = 0) -> List[Entry]:
+        """List entries with optional pagination, newest first."""
+        q = self.session.query(Entry).order_by(desc(Entry.created_at))
+        if offset:
+            q = q.offset(offset)
+        if limit is not None:
+            q = q.limit(limit)
+        return q.all()
 
     def update_entry(self, entry_id: str, update_data: EntryUpdate) -> Entry:
         """Update an entry and create a new version"""

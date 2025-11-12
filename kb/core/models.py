@@ -13,7 +13,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, synonym
 from sqlalchemy.sql import func
 
 Base = declarative_base()
@@ -33,7 +33,7 @@ class Entry(Base):
     entry_type = Column(String, nullable=False, index=True)
     title = Column(Text, nullable=False)
     content = Column(Text, nullable=False)
-    content_hash = Column(String, nullable=False)
+    content_hash = Column(String, nullable=True)
     file_path = Column(String, unique=True)
     source = Column(String)
     source_metadata = Column(Text)  # JSON
@@ -71,6 +71,7 @@ class EntryVersion(Base):
     id = Column(String, primary_key=True, default=lambda: generate_id("ver"))
     entry_id = Column(String, ForeignKey("entries.id"), nullable=False)
     version_number = Column(Integer, nullable=False)
+    title = Column(Text)
     content = Column(Text, nullable=False)
     content_hash = Column(String, nullable=False)
     changed_at = Column(DateTime, nullable=False, default=func.now())
@@ -91,6 +92,7 @@ class Tag(Base):
     category = Column(String)  # 'domain', 'project', 'theme', 'status'
     color = Column(String)
     parent_tag_id = Column(String, ForeignKey("tags.id"))
+    created_at = Column(DateTime, default=func.now())
 
     entries = relationship("Entry", secondary="entry_tags", back_populates="tags")
     children = relationship("Tag", backref="parent", remote_side=[id])
@@ -125,6 +127,10 @@ class EntryLink(Base):
     __table_args__ = (
         UniqueConstraint("from_entry_id", "to_entry_id", "link_type", name="uq_entry_link"),
     )
+
+    # Backward-compatible attribute names used in tests
+    source_id = synonym("from_entry_id")
+    target_id = synonym("to_entry_id")
 
 
 class Person(Base):
