@@ -25,7 +25,7 @@ class SearchService:
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Entry]:
         """
         Perform full-text and filtered search on entries
@@ -50,12 +50,7 @@ class SearchService:
         # Full-text search
         if query:
             search_term = f"%{query}%"
-            q = q.filter(
-                or_(
-                    Entry.title.ilike(search_term),
-                    Entry.content.ilike(search_term)
-                )
-            )
+            q = q.filter(or_(Entry.title.ilike(search_term), Entry.content.ilike(search_term)))
 
         # Filter by entry types
         if entry_types:
@@ -64,18 +59,22 @@ class SearchService:
         # Filter by tags (must have ALL specified tags)
         if tags:
             for tag_name in tags:
-                tag_subq = self.session.query(EntryTag.entry_id)\
-                    .join(Tag)\
-                    .filter(Tag.name == tag_name)\
+                tag_subq = (
+                    self.session.query(EntryTag.entry_id)
+                    .join(Tag)
+                    .filter(Tag.name == tag_name)
                     .subquery()
+                )
                 q = q.filter(Entry.id.in_(tag_subq))
 
         # Filter by projects
         if projects:
-            project_subq = self.session.query(EntryProject.entry_id)\
-                .join(Project)\
-                .filter(Project.name.in_(projects))\
+            project_subq = (
+                self.session.query(EntryProject.entry_id)
+                .join(Project)
+                .filter(Project.name.in_(projects))
                 .subquery()
+            )
             q = q.filter(Entry.id.in_(project_subq))
 
         # Date range filters
@@ -95,11 +94,7 @@ class SearchService:
 
         return q.all()
 
-    def search_fts(
-        self,
-        query: str,
-        limit: int = 50
-    ) -> List[Entry]:
+    def search_fts(self, query: str, limit: int = 50) -> List[Entry]:
         """
         Full-text search using SQLite FTS5
         More efficient than LIKE for large datasets
@@ -113,27 +108,24 @@ class SearchService:
         """
 
         # Use FTS5 virtual table for search
-        fts_query = text("""
+        fts_query = text(
+            """
             SELECT entry_id, rank
             FROM entries_fts
             WHERE entries_fts MATCH :query
             ORDER BY rank
             LIMIT :limit
-        """)
+        """
+        )
 
-        results = self.session.execute(
-            fts_query,
-            {"query": query, "limit": limit}
-        ).fetchall()
+        results = self.session.execute(fts_query, {"query": query, "limit": limit}).fetchall()
 
         if not results:
             return []
 
         # Get full entries preserving rank order
         entry_ids = [r[0] for r in results]
-        entries = self.session.query(Entry)\
-            .filter(Entry.id.in_(entry_ids))\
-            .all()
+        entries = self.session.query(Entry).filter(Entry.id.in_(entry_ids)).all()
 
         # Sort by original rank order
         entry_dict = {e.id: e for e in entries}
@@ -142,23 +134,16 @@ class SearchService:
         return sorted_entries
 
     def search_by_date_range(
-        self,
-        start_date: datetime,
-        end_date: datetime,
-        entry_types: Optional[List[str]] = None
+        self, start_date: datetime, end_date: datetime, entry_types: Optional[List[str]] = None
     ) -> List[Entry]:
         """
         Search entries within a specific date range
         Useful for temporal queries
         """
 
-        q = self.session.query(Entry)\
-            .filter(
-                and_(
-                    Entry.created_at >= start_date,
-                    Entry.created_at <= end_date
-                )
-            )
+        q = self.session.query(Entry).filter(
+            and_(Entry.created_at >= start_date, Entry.created_at <= end_date)
+        )
 
         if entry_types:
             q = q.filter(Entry.entry_type.in_(entry_types))
@@ -166,10 +151,7 @@ class SearchService:
         return q.order_by(Entry.created_at.desc()).all()
 
     def find_similar_titles(
-        self,
-        title: str,
-        threshold: float = 0.6,
-        limit: int = 10
+        self, title: str, threshold: float = 0.6, limit: int = 10
     ) -> List[Entry]:
         """
         Find entries with similar titles
@@ -180,40 +162,40 @@ class SearchService:
         # For production, consider using a proper similarity function
         title_pattern = f"%{title}%"
 
-        entries = self.session.query(Entry)\
-            .filter(Entry.title.ilike(title_pattern))\
-            .limit(limit)\
-            .all()
+        entries = (
+            self.session.query(Entry).filter(Entry.title.ilike(title_pattern)).limit(limit).all()
+        )
 
         return entries
 
     def get_entries_with_tag(self, tag_name: str) -> List[Entry]:
         """Get all entries with a specific tag"""
 
-        return self.session.query(Entry)\
-            .join(Entry.tags)\
-            .filter(Tag.name == tag_name)\
-            .order_by(Entry.updated_at.desc())\
+        return (
+            self.session.query(Entry)
+            .join(Entry.tags)
+            .filter(Tag.name == tag_name)
+            .order_by(Entry.updated_at.desc())
             .all()
+        )
 
     def get_entries_in_project(self, project_name: str) -> List[Entry]:
         """Get all entries in a specific project"""
 
-        return self.session.query(Entry)\
-            .join(Entry.projects)\
-            .filter(Project.name == project_name)\
-            .order_by(Entry.updated_at.desc())\
+        return (
+            self.session.query(Entry)
+            .join(Entry.projects)
+            .filter(Project.name == project_name)
+            .order_by(Entry.updated_at.desc())
             .all()
+        )
 
     def get_recent_entries(
-        self,
-        limit: int = 20,
-        entry_types: Optional[List[str]] = None
+        self, limit: int = 20, entry_types: Optional[List[str]] = None
     ) -> List[Entry]:
         """Get most recently updated entries"""
 
-        q = self.session.query(Entry)\
-            .order_by(Entry.updated_at.desc())
+        q = self.session.query(Entry).order_by(Entry.updated_at.desc())
 
         if entry_types:
             q = q.filter(Entry.entry_type.in_(entry_types))
@@ -223,15 +205,14 @@ class SearchService:
     def get_popular_tags(self, limit: int = 20) -> List[Dict[str, Any]]:
         """Get most frequently used tags"""
 
-        results = self.session.query(
-            Tag.name,
-            func.count(EntryTag.entry_id).label('count')
-        )\
-            .join(EntryTag)\
-            .group_by(Tag.name)\
-            .order_by(func.count(EntryTag.entry_id).desc())\
-            .limit(limit)\
+        results = (
+            self.session.query(Tag.name, func.count(EntryTag.entry_id).label("count"))
+            .join(EntryTag)
+            .group_by(Tag.name)
+            .order_by(func.count(EntryTag.entry_id).desc())
+            .limit(limit)
             .all()
+        )
 
         return [{"name": name, "count": count} for name, count in results]
 
@@ -243,28 +224,28 @@ class SearchService:
 
         from ..core.models import EntryLink
 
-        entries = self.session.query(Entry)\
-            .outerjoin(EntryTag)\
-            .outerjoin(EntryProject)\
-            .outerjoin(EntryLink, or_(
-                Entry.id == EntryLink.from_entry_id,
-                Entry.id == EntryLink.to_entry_id
-            ))\
+        entries = (
+            self.session.query(Entry)
+            .outerjoin(EntryTag)
+            .outerjoin(EntryProject)
+            .outerjoin(
+                EntryLink,
+                or_(Entry.id == EntryLink.from_entry_id, Entry.id == EntryLink.to_entry_id),
+            )
             .filter(
                 and_(
                     EntryTag.entry_id.is_(None),
                     EntryProject.entry_id.is_(None),
-                    EntryLink.id.is_(None)
+                    EntryLink.id.is_(None),
                 )
-            )\
+            )
             .all()
+        )
 
         return entries
 
     def count_entries(
-        self,
-        entry_types: Optional[List[str]] = None,
-        tags: Optional[List[str]] = None
+        self, entry_types: Optional[List[str]] = None, tags: Optional[List[str]] = None
     ) -> int:
         """Count entries matching filters"""
 
@@ -275,10 +256,12 @@ class SearchService:
 
         if tags:
             for tag_name in tags:
-                tag_subq = self.session.query(EntryTag.entry_id)\
-                    .join(Tag)\
-                    .filter(Tag.name == tag_name)\
+                tag_subq = (
+                    self.session.query(EntryTag.entry_id)
+                    .join(Tag)
+                    .filter(Tag.name == tag_name)
                     .subquery()
+                )
                 q = q.filter(Entry.id.in_(tag_subq))
 
         return q.scalar()
@@ -286,12 +269,12 @@ class SearchService:
     def search_hybrid(
         self,
         query: str,
-        vector_store: 'VectorStore',
+        vector_store: "VectorStore",
         limit: int = 50,
         semantic_weight: float = 0.6,
         keyword_weight: float = 0.4,
         entry_types: Optional[List[str]] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> List[Entry]:
         """
         Hybrid search combining semantic and keyword search
@@ -316,10 +299,7 @@ class SearchService:
 
         # Get semantic results
         semantic_results = vector_store.search(query, limit=limit * 2)
-        semantic_scores = {
-            r['id']: r['similarity'] * semantic_weight
-            for r in semantic_results
-        }
+        semantic_scores = {r["id"]: r["similarity"] * semantic_weight for r in semantic_results}
 
         # Get keyword results
         keyword_results = self.search_fts(query, limit=limit * 2)
@@ -334,38 +314,27 @@ class SearchService:
         all_entry_ids = set(semantic_scores.keys()) | set(keyword_scores.keys())
         combined_scores = {}
         for entry_id in all_entry_ids:
-            combined_scores[entry_id] = (
-                semantic_scores.get(entry_id, 0) +
-                keyword_scores.get(entry_id, 0)
+            combined_scores[entry_id] = semantic_scores.get(entry_id, 0) + keyword_scores.get(
+                entry_id, 0
             )
 
         # Get entries and sort by combined score
-        sorted_ids = sorted(
-            combined_scores.keys(),
-            key=lambda x: combined_scores[x],
-            reverse=True
-        )[:limit]
+        sorted_ids = sorted(combined_scores.keys(), key=lambda x: combined_scores[x], reverse=True)[
+            :limit
+        ]
 
         # Fetch full entries
-        entries = self.session.query(Entry)\
-            .filter(Entry.id.in_(sorted_ids))\
-            .all()
+        entries = self.session.query(Entry).filter(Entry.id.in_(sorted_ids)).all()
 
         # Apply filters if specified
         if entry_types:
             entries = [e for e in entries if e.entry_type in entry_types]
 
         if tags:
-            entries = [
-                e for e in entries
-                if all(tag in {t.name for t in e.tags} for tag in tags)
-            ]
+            entries = [e for e in entries if all(tag in {t.name for t in e.tags} for tag in tags)]
 
         # Sort by combined score
         entry_dict = {e.id: e for e in entries}
-        sorted_entries = [
-            entry_dict[eid] for eid in sorted_ids
-            if eid in entry_dict
-        ]
+        sorted_entries = [entry_dict[eid] for eid in sorted_ids if eid in entry_dict]
 
         return sorted_entries

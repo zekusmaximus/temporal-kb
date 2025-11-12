@@ -17,12 +17,14 @@ class EntryType(str, Enum):
     WEB_CLIP = "web_clip"
     CHAT_EXPORT = "chat_export"
 
+
 class LinkType(str, Enum):
     REFERENCES = "references"
     BUILDS_ON = "builds_on"
     CONTRADICTS = "contradicts"
     APPLIES_TO = "applies_to"
     INSPIRED_BY = "inspired_by"
+
 
 class EntryBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
@@ -33,9 +35,11 @@ class EntryBase(BaseModel):
     vault_id: Optional[str] = None
     is_public: bool = False
 
+
 class EntryCreate(EntryBase):
     tags: Optional[List[str]] = []
     projects: Optional[List[str]] = []
+
 
 class EntryUpdate(BaseModel):
     title: Optional[str] = None
@@ -43,6 +47,7 @@ class EntryUpdate(BaseModel):
     tags: Optional[List[str]] = None
     projects: Optional[List[str]] = None
     is_public: Optional[bool] = None
+
 
 class EntryResponse(EntryBase):
     id: str
@@ -57,6 +62,7 @@ class EntryResponse(EntryBase):
     class Config:
         from_attributes = True
 
+
 class EntryVersionResponse(BaseModel):
     id: str
     version_number: int
@@ -67,11 +73,13 @@ class EntryVersionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class LinkCreate(BaseModel):
     from_entry_id: str
     to_entry_id: str
     link_type: LinkType
     context: Optional[str] = None
+
 
 class LinkResponse(BaseModel):
     id: str
@@ -84,6 +92,7 @@ class LinkResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class SearchQuery(BaseModel):
     query: str
     entry_types: Optional[List[EntryType]] = None
@@ -94,6 +103,7 @@ class SearchQuery(BaseModel):
     limit: int = Field(default=50, ge=1, le=500)
     semantic: bool = False  # Use vector search
 
+
 class TemporalQuery(BaseModel):
     query: str
     date: Optional[datetime] = None
@@ -101,11 +111,13 @@ class TemporalQuery(BaseModel):
     date_to: Optional[datetime] = None
     comparison_mode: bool = False  # Compare "then vs now"
 
+
 class TagCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     category: Optional[str] = None
     color: Optional[str] = None
     parent_tag_id: Optional[str] = None
+
 
 class ProjectCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)

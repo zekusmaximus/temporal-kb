@@ -13,14 +13,16 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, synonym
 from sqlalchemy.sql import func
 
 Base = declarative_base()
 
+
 def generate_id(prefix: str = "ent") -> str:
     """Generate prefixed UUID for easier debugging"""
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
+
 
 class Entry(Base):
     __tablename__ = "entries"
@@ -31,7 +33,7 @@ class Entry(Base):
     entry_type = Column(String, nullable=False, index=True)
     title = Column(Text, nullable=False)
     content = Column(Text, nullable=False)
-    content_hash = Column(String, nullable=False)
+    content_hash = Column(String, nullable=True)
     file_path = Column(String, unique=True)
     source = Column(String)
     source_metadata = Column(Text)  # JSON
@@ -49,13 +51,13 @@ class Entry(Base):
         "EntryLink",
         foreign_keys="EntryLink.from_entry_id",
         back_populates="from_entry",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     incoming_links = relationship(
         "EntryLink",
         foreign_keys="EntryLink.to_entry_id",
         back_populates="to_entry",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     embedding = relationship("Embedding", back_populates="entry", uselist=False)
 
@@ -69,6 +71,7 @@ class EntryVersion(Base):
     id = Column(String, primary_key=True, default=lambda: generate_id("ver"))
     entry_id = Column(String, ForeignKey("entries.id"), nullable=False)
     version_number = Column(Integer, nullable=False)
+    title = Column(Text)
     content = Column(Text, nullable=False)
     content_hash = Column(String, nullable=False)
     changed_at = Column(DateTime, nullable=False, default=func.now())
@@ -78,9 +81,7 @@ class EntryVersion(Base):
 
     entry = relationship("Entry", back_populates="versions")
 
-    __table_args__ = (
-        UniqueConstraint('entry_id', 'version_number', name='uq_entry_version'),
-    )
+    __table_args__ = (UniqueConstraint("entry_id", "version_number", name="uq_entry_version"),)
 
 
 class Tag(Base):
@@ -91,6 +92,7 @@ class Tag(Base):
     category = Column(String)  # 'domain', 'project', 'theme', 'status'
     color = Column(String)
     parent_tag_id = Column(String, ForeignKey("tags.id"))
+    created_at = Column(DateTime, default=func.now())
 
     entries = relationship("Entry", secondary="entry_tags", back_populates="tags")
     children = relationship("Tag", backref="parent", remote_side=[id])
@@ -117,12 +119,18 @@ class EntryLink(Base):
     created_at = Column(DateTime, default=func.now())
     is_automatic = Column(Boolean, default=False)
 
-    from_entry = relationship("Entry", foreign_keys=[from_entry_id], back_populates="outgoing_links")
+    from_entry = relationship(
+        "Entry", foreign_keys=[from_entry_id], back_populates="outgoing_links"
+    )
     to_entry = relationship("Entry", foreign_keys=[to_entry_id], back_populates="incoming_links")
 
     __table_args__ = (
-        UniqueConstraint('from_entry_id', 'to_entry_id', 'link_type', name='uq_entry_link'),
+        UniqueConstraint("from_entry_id", "to_entry_id", "link_type", name="uq_entry_link"),
     )
+
+    # Backward-compatible attribute names used in tests
+    source_id = synonym("from_entry_id")
+    target_id = synonym("to_entry_id")
 
 
 class Person(Base):

@@ -20,4 +20,4 @@ def short_hash(data: str, length: int = 8) -> str:
     if not isinstance(data, (bytes, bytearray)):
         data = str(data).encode("utf-8")
     digest = hashlib.sha256(data).hexdigest()
-    return digest[:max(1, length)]
+    return digest[: max(1, length)]

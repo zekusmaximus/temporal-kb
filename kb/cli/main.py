@@ -11,8 +11,8 @@ from .ui import console, print_error, print_success, print_warning
 
 
 @click.group()
-@click.option('--config', type=click.Path(exists=True), help='Path to config file')
-@click.option('--data-dir', type=click.Path(), help='Override data directory')
+@click.option("--config", type=click.Path(exists=True), help="Path to config file")
+@click.option("--data-dir", type=click.Path(), help="Override data directory")
 @click.pass_context
 def cli(ctx, config, data_dir):
     """Temporal Knowledge Base - Your personal wiki with memory"""
@@ -36,8 +36,8 @@ def cli(ctx, config, data_dir):
 
     # Store in context for subcommands
     ctx.ensure_object(dict)
-    ctx.obj['config'] = cfg
-    ctx.obj['db'] = get_db()
+    ctx.obj["config"] = cfg
+    ctx.obj["db"] = get_db()
 
 
 @cli.command()
@@ -58,6 +58,7 @@ def init():
         # Initialize git repo if enabled
         if config.git_enabled:
             from ..storage.git_manager import GitManager
+
             git_mgr = GitManager(config.data_dir)
             git_mgr.init_repo()
 
@@ -128,6 +129,7 @@ cli.add_command(import_cmd.import_data)
 cli.add_command(clip.clip)
 cli.add_command(index.index)
 
+
 def main():
     """Entry point for the CLI"""
     try:
@@ -140,5 +142,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

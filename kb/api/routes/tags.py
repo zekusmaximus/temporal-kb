@@ -11,26 +11,24 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 @router.get("/")
 async def list_tags(
-    db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    db: Session = Depends(get_session), current_user: dict = Depends(get_current_user)
 ):
     """List all tags with usage counts"""
 
     from sqlalchemy import func
 
-    tags = db.query(
-        Tag.id,
-        Tag.name,
-        Tag.category,
-        Tag.color,
-        func.count(EntryTag.entry_id).label('count')
-    )\
-        .outerjoin(EntryTag)\
-        .group_by(Tag.id)\
-        .order_by(func.count(EntryTag.entry_id).desc())\
+    tags = (
+        db.query(
+            Tag.id, Tag.name, Tag.category, Tag.color, func.count(EntryTag.entry_id).label("count")
+        )
+        .outerjoin(EntryTag)
+        .group_by(Tag.id)
+        .order_by(func.count(EntryTag.entry_id).desc())
         .all()
+    )
 
     return [
         {
@@ -38,7 +36,7 @@ async def list_tags(
             "name": tag.name,
             "category": tag.category,
             "color": tag.color,
-            "usage_count": tag.count
+            "usage_count": tag.count,
         }
         for tag in tags
     ]
@@ -48,7 +46,7 @@ async def list_tags(
 async def create_tag(
     tag_data: TagCreate,
     db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Create a new tag"""
 
@@ -56,22 +54,18 @@ async def create_tag(
     existing = db.query(Tag).filter(Tag.name == tag_data.name).first()
     if existing:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=400, detail="Tag already exists")
 
     tag = Tag(
         name=tag_data.name,
         category=tag_data.category,
         color=tag_data.color,
-        parent_tag_id=tag_data.parent_tag_id
+        parent_tag_id=tag_data.parent_tag_id,
     )
 
     db.add(tag)
     db.commit()
     db.refresh(tag)
 
-    return {
-        "id": tag.id,
-        "name": tag.name,
-        "category": tag.category,
-        "color": tag.color
-    }
+    return {"id": tag.id, "name": tag.name, "category": tag.category, "color": tag.color}

@@ -19,18 +19,21 @@ from ..ui import (
 
 
 @click.command()
-@click.option('--title', '-t', help='Entry title')
-@click.option('--content', '-c', help='Entry content (or use --editor)')
-@click.option('--editor', '-e', is_flag=True, help='Open editor for content')
-@click.option('--type', 'entry_type',
-              type=click.Choice([t.value for t in EntryType]),
-              default='note',
-              help='Entry type')
-@click.option('--tags', '-T', multiple=True, help='Tags (can specify multiple)')
-@click.option('--project', '-p', multiple=True, help='Projects (can specify multiple)')
-@click.option('--source', '-s', help='Source of the entry')
-@click.option('--quick', '-q', help='Quick note: kb add -q "Your note here"')
-@click.option('--template', help='Use a template (legal_case, concept, etc.)')
+@click.option("--title", "-t", help="Entry title")
+@click.option("--content", "-c", help="Entry content (or use --editor)")
+@click.option("--editor", "-e", is_flag=True, help="Open editor for content")
+@click.option(
+    "--type",
+    "entry_type",
+    type=click.Choice([t.value for t in EntryType]),
+    default="note",
+    help="Entry type",
+)
+@click.option("--tags", "-T", multiple=True, help="Tags (can specify multiple)")
+@click.option("--project", "-p", multiple=True, help="Projects (can specify multiple)")
+@click.option("--source", "-s", help="Source of the entry")
+@click.option("--quick", "-q", help='Quick note: kb add -q "Your note here"')
+@click.option("--template", help="Use a template (legal_case, concept, etc.)")
 @click.pass_context
 def add(ctx, title, content, editor, entry_type, tags, project, source, quick, template):
     """Create a new entry
@@ -48,7 +51,7 @@ def add(ctx, title, content, editor, entry_type, tags, project, source, quick, t
         if quick:
             title = f"Note - {datetime.now().strftime('%Y-%m-%d %H:%M')}"
             content = quick
-            entry_type = 'note'
+            entry_type = "note"
 
         # Template mode
         elif template:
@@ -85,7 +88,7 @@ def add(ctx, title, content, editor, entry_type, tags, project, source, quick, t
                     entry_type=EntryType(entry_type),
                     tags=list(tags),
                     projects=list(project),
-                    source=source or 'cli'
+                    source=source or "cli",
                 )
 
                 entry = entry_service.create_entry(entry_data)
@@ -105,9 +108,9 @@ def _get_template(template_name: str) -> tuple:
     """Get template content based on name"""
 
     templates = {
-        'legal_case': {
-            'title': 'Case Brief: [Case Name]',
-            'content': '''# Case Brief
+        "legal_case": {
+            "title": "Case Brief: [Case Name]",
+            "content": """# Case Brief
 
 ## Citation
 [Full citation]
@@ -135,13 +138,13 @@ def _get_template(template_name: str) -> tuple:
 
 ## Fiction Implications
 [Speculative/worldbuilding connections if any]
-''',
-            'type': 'legal_case',
-            'tags': ['legal', 'case-law']
+""",
+            "type": "legal_case",
+            "tags": ["legal", "case-law"],
         },
-        'concept': {
-            'title': '[Concept Name]',
-            'content': '''# [Concept Name]
+        "concept": {
+            "title": "[Concept Name]",
+            "content": """# [Concept Name]
 
 ## Definition
 [Clear, concise definition]
@@ -166,13 +169,13 @@ def _get_template(template_name: str) -> tuple:
 
 ## Personal Notes
 [Your thoughts, interpretations, connections]
-''',
-            'type': 'concept',
-            'tags': ['concept']
+""",
+            "type": "concept",
+            "tags": ["concept"],
         },
-        'meeting': {
-            'title': 'Meeting - [Topic] - [Date]',
-            'content': '''# Meeting Notes
+        "meeting": {
+            "title": "Meeting - [Topic] - [Date]",
+            "content": """# Meeting Notes
 
 ## Date & Time
 [YYYY-MM-DD HH:MM]
@@ -198,13 +201,13 @@ def _get_template(template_name: str) -> tuple:
 
 ## Next Steps
 [What happens next]
-''',
-            'type': 'meeting_note',
-            'tags': ['meeting']
+""",
+            "type": "meeting_note",
+            "tags": ["meeting"],
         },
-        'story_note': {
-            'title': '[Story Element Name]',
-            'content': '''# [Story Element]
+        "story_note": {
+            "title": "[Story Element Name]",
+            "content": """# [Story Element]
 
 ## Project
 [Which narrative project]
@@ -227,10 +230,10 @@ def _get_template(template_name: str) -> tuple:
 
 ## Development Notes
 [Evolution of this idea]
-''',
-            'type': 'note',
-            'tags': ['fiction', 'worldbuilding']
-        }
+""",
+            "type": "note",
+            "tags": ["fiction", "worldbuilding"],
+        },
     }
 
     template = templates.get(template_name)
@@ -238,21 +241,16 @@ def _get_template(template_name: str) -> tuple:
         available = ", ".join(templates.keys())
         raise ValueError(f"Unknown template. Available: {available}")
 
-    return (
-        template['title'],
-        template['content'],
-        template['type'],
-        template['tags']
-    )
+    return (template["title"], template["content"], template["type"], template["tags"])
 
 
 def _get_template_content(entry_type: str) -> str:
     """Get minimal template for entry type"""
-    if entry_type == 'legal_case':
+    if entry_type == "legal_case":
         return "# Case Brief\n\n## Citation\n\n## Holding\n\n"
-    elif entry_type == 'concept':
+    elif entry_type == "concept":
         return "# Concept\n\n## Definition\n\n## Context\n\n"
-    elif entry_type == 'code_snippet':
+    elif entry_type == "code_snippet":
         return "# Code Snippet\n\n```python\n# Your code here\n```\n\n## Purpose\n\n"
     else:
         return "# Entry\n\n"

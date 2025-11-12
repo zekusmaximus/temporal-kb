@@ -21,6 +21,7 @@ class ImporterBase(ABC):
         self.file_manager = file_manager
         # Lazy import to avoid circular dependency
         from ..entry_service import EntryService
+
         self.entry_service = EntryService(session, file_manager)
 
     @abstractmethod
@@ -41,7 +42,7 @@ class ImporterBase(ABC):
         source: str,
         source_metadata: Optional[Dict[str, Any]] = None,
         tags: Optional[List[str]] = None,
-        projects: Optional[List[str]] = None
+        projects: Optional[List[str]] = None,
     ) -> Optional[Entry]:
         """Helper method to create entry from imported data"""
 
@@ -53,7 +54,7 @@ class ImporterBase(ABC):
                 source=source,
                 source_metadata=source_metadata,
                 tags=tags or [],
-                projects=projects or []
+                projects=projects or [],
             )
 
             return self.entry_service.create_entry(entry_data)

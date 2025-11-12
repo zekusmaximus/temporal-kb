@@ -8,9 +8,9 @@ from ..ui import console, print_info
 
 
 @click.command()
-@click.option('--host', default=None, help='Host address')
-@click.option('--port', type=int, default=None, help='Port number')
-@click.option('--reload', is_flag=True, help='Enable auto-reload')
+@click.option("--host", default=None, help="Host address")
+@click.option("--port", type=int, default=None, help="Port number")
+@click.option("--reload", is_flag=True, help="Enable auto-reload")
 def serve(host, port, reload):
     """Start the API server
 
@@ -29,10 +29,4 @@ def serve(host, port, reload):
     print_info(f"API docs available at http://{host}:{port}/docs")
     console.print()
 
-    uvicorn.run(
-        "kb.api.main:app",
-        host=host,
-        port=port,
-        reload=reload
-    )
-
+    uvicorn.run("kb.api.main:app", host=host, port=port, reload=reload)

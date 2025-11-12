@@ -13,6 +13,7 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 def get_temporal_service(db: Session = Depends(get_session)):
     return TemporalService(db)
 
@@ -20,7 +21,7 @@ def get_temporal_service(db: Session = Depends(get_session)):
 @router.get("/on-this-day", response_model=List[EntryResponse])
 async def on_this_day(
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get entries created on this day in history"""
 
@@ -36,7 +37,7 @@ async def on_this_day(
             content=entry.content[:200],  # Preview
             tags=[tag.name for tag in entry.tags],
             projects=[proj.name for proj in entry.projects],
-            version_count=len(entry.versions)
+            version_count=len(entry.versions),
         )
         for entry in entries
     ]
@@ -47,7 +48,7 @@ async def date_range(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get entries from a date range"""
 
@@ -56,10 +57,8 @@ async def date_range(
         end = datetime.fromisoformat(end_date)
     except ValueError as e:
         from fastapi import HTTPException
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid date format. Use YYYY-MM-DD"
-        ) from e
+
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD") from e
 
     entries = temporal_service.get_entries_in_range(start, end)
 
@@ -73,7 +72,7 @@ async def date_range(
             content=entry.content[:200],
             tags=[tag.name for tag in entry.tags],
             projects=[proj.name for proj in entry.projects],
-            version_count=len(entry.versions)
+            version_count=len(entry.versions),
         )
         for entry in entries
     ]
@@ -86,7 +85,7 @@ async def compare_periods(
     period2_start: str = Query(..., description="Period 2 start (YYYY-MM-DD)"),
     period2_end: str = Query(..., description="Period 2 end (YYYY-MM-DD)"),
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Compare two time periods (then vs now)"""
 
@@ -97,14 +96,10 @@ async def compare_periods(
         p2_end = datetime.fromisoformat(period2_end)
     except ValueError as e:
         from fastapi import HTTPException
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid date format. Use YYYY-MM-DD"
-        ) from e
 
-    comparison = temporal_service.compare_periods(
-        p1_start, p1_end, p2_start, p2_end
-    )
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD") from e
+
+    comparison = temporal_service.compare_periods(p1_start, p1_end, p2_start, p2_end)
 
     return comparison
 
@@ -114,7 +109,7 @@ async def topic_evolution(
     topic: str,
     tag: Optional[str] = None,
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Track how thinking on a topic evolved over time"""
 
@@ -125,21 +120,23 @@ async def topic_evolution(
         "tag": tag,
         "evolution": [
             {
-                "entry_id": item['entry'].id,
-                "title": item['entry'].title,
-                "date": item['date'].isoformat(),
-                "version_number": item['version_number'],
-                "time_since_last_days": item['time_since_last'].days if item['time_since_last'] else None
+                "entry_id": item["entry"].id,
+                "title": item["entry"].title,
+                "date": item["date"].isoformat(),
+                "version_number": item["version_number"],
+                "time_since_last_days": (
+                    item["time_since_last"].days if item["time_since_last"] else None
+                ),
             }
             for item in evolution
-        ]
+        ],
     }
 
 
 @router.get("/patterns")
 async def temporal_patterns(
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Analyze temporal patterns in knowledge base"""
 
@@ -149,9 +146,9 @@ async def temporal_patterns(
 
 @router.get("/growth")
 async def growth_timeline(
-    interval: str = Query('month', regex='^(day|week|month|year)$'),
+    interval: str = Query("month", regex="^(day|week|month|year)$"),
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get knowledge base growth over time"""
 
@@ -163,7 +160,7 @@ async def growth_timeline(
 async def cyclical_topics(
     min_occurrences: int = Query(3, ge=2),
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Find topics that recur at regular intervals"""
 
@@ -176,7 +173,7 @@ async def activity_heatmap(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     temporal_service: TemporalService = Depends(get_temporal_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get activity heatmap (entries per day)"""
 

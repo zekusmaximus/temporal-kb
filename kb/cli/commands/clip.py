@@ -13,9 +13,9 @@ from ..ui import print_error, print_success
 
 
 @click.command()
-@click.option('--title', '-t', help='Clip title')
-@click.option('--tags', '-T', multiple=True, help='Tags')
-@click.option('--url', '-u', help='Source URL')
+@click.option("--title", "-t", help="Clip title")
+@click.option("--tags", "-T", multiple=True, help="Tags")
+@click.option("--url", "-u", help="Source URL")
 def clip(title, tags, url):
     """Save clipboard content as an entry
 
@@ -34,7 +34,7 @@ def clip(title, tags, url):
         # Auto-generate title if not provided
         if not title:
             # Use first line or timestamp
-            first_line = content.split('\n')[0][:50]
+            first_line = content.split("\n")[0][:50]
             if first_line:
                 title = f"Clip: {first_line}"
             else:
@@ -43,7 +43,7 @@ def clip(title, tags, url):
         # Prepare metadata
         source_metadata = {}
         if url:
-            source_metadata['url'] = url
+            source_metadata["url"] = url
             content = f"Source: {url}\n\n---\n\n{content}"
 
         # Save entry
@@ -56,9 +56,9 @@ def clip(title, tags, url):
                 title=title,
                 content=content,
                 entry_type=EntryType.WEB_CLIP,
-                tags=list(tags) if tags else ['clip'],
-                source='clipboard',
-                source_metadata=source_metadata if source_metadata else None
+                tags=list(tags) if tags else ["clip"],
+                source="clipboard",
+                source_metadata=source_metadata if source_metadata else None,
             )
 
             entry = entry_service.create_entry(entry_data)

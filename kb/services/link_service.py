@@ -13,6 +13,7 @@ from ..core.schemas import LinkType
 
 logger = logging.getLogger(__name__)
 
+
 class LinkService:
     """
     Manages relationships between entries
@@ -29,7 +30,7 @@ class LinkService:
         link_type: LinkType,
         context: Optional[str] = None,
         strength: float = 1.0,
-        is_automatic: bool = False
+        is_automatic: bool = False,
     ) -> Optional[EntryLink]:
         """
         Create a link between two entries
@@ -47,13 +48,17 @@ class LinkService:
         """
         try:
             # Check if link already exists
-            existing = self.session.query(EntryLink).filter(
-                and_(
-                    EntryLink.from_entry_id == from_entry_id,
-                    EntryLink.to_entry_id == to_entry_id,
-                    EntryLink.link_type == link_type.value
+            existing = (
+                self.session.query(EntryLink)
+                .filter(
+                    and_(
+                        EntryLink.from_entry_id == from_entry_id,
+                        EntryLink.to_entry_id == to_entry_id,
+                        EntryLink.link_type == link_type.value,
+                    )
                 )
-            ).first()
+                .first()
+            )
 
             if existing:
                 # Update strength if higher
@@ -70,7 +75,7 @@ class LinkService:
                 link_type=link_type.value,
                 context=context,
                 strength=strength,
-                is_automatic=is_automatic
+                is_automatic=is_automatic,
             )
 
             self.session.add(link)
@@ -100,19 +105,25 @@ class LinkService:
 
     def get_links_from_entry(self, entry_id: str) -> List[EntryLink]:
         """Get all outgoing links from an entry"""
-        return self.session.query(EntryLink)\
-            .filter(EntryLink.from_entry_id == entry_id)\
-            .order_by(EntryLink.strength.desc())\
+        return (
+            self.session.query(EntryLink)
+            .filter(EntryLink.from_entry_id == entry_id)
+            .order_by(EntryLink.strength.desc())
             .all()
+        )
 
     def get_links_to_entry(self, entry_id: str) -> List[EntryLink]:
         """Get all incoming links to an entry"""
-        return self.session.query(EntryLink)\
-            .filter(EntryLink.to_entry_id == entry_id)\
-            .order_by(EntryLink.strength.desc())\
+        return (
+            self.session.query(EntryLink)
+            .filter(EntryLink.to_entry_id == entry_id)
+            .order_by(EntryLink.strength.desc())
             .all()
+        )
 
-    def detect_links_in_entry(self, entry: Entry, min_strength: float = 0.5) -> List[Dict[str, Any]]:
+    def detect_links_in_entry(
+        self, entry: Entry, min_strength: float = 0.5
+    ) -> List[Dict[str, Any]]:
         """
         Automatically detect potential links in entry content
 
@@ -126,9 +137,7 @@ class LinkService:
         detected_links = []
 
         # Get all other entries
-        other_entries = self.session.query(Entry)\
-            .filter(Entry.id != entry.id)\
-            .all()
+        other_entries = self.session.query(Entry).filter(Entry.id != entry.id).all()
 
         entry_text = f"{entry.title} {entry.content}".lower()
 
@@ -137,56 +146,63 @@ class LinkService:
             if other_entry.title.lower() in entry_text:
                 # Find context
                 pattern = re.compile(
-                    f".{{0,50}}{re.escape(other_entry.title.lower())}.{{0,50}}",
-                    re.IGNORECASE
+                    f".{{0,50}}{re.escape(other_entry.title.lower())}.{{0,50}}", re.IGNORECASE
                 )
                 match = pattern.search(entry_text)
                 context = match.group(0) if match else None
 
-                detected_links.append({
-                    'to_entry_id': other_entry.id,
-                    'to_entry_title': other_entry.title,
-                    'link_type': LinkType.REFERENCES,
-                    'strength': 0.8,
-                    'context': context,
-                    'reason': 'title_mention'
-                })
+                detected_links.append(
+                    {
+                        "to_entry_id": other_entry.id,
+                        "to_entry_title": other_entry.title,
+                        "link_type": LinkType.REFERENCES,
+                        "strength": 0.8,
+                        "context": context,
+                        "reason": "title_mention",
+                    }
+                )
 
             # Check for shared tags (weaker signal)
             if entry.tags and other_entry.tags:
                 shared_tags = {t.name for t in entry.tags} & {t.name for t in other_entry.tags}
                 if len(shared_tags) >= 2:  # At least 2 shared tags
                     strength = min(0.7, len(shared_tags) * 0.2)
-                    detected_links.append({
-                        'to_entry_id': other_entry.id,
-                        'to_entry_title': other_entry.title,
-                        'link_type': LinkType.REFERENCES,
-                        'strength': strength,
-                        'context': f"Shared tags: {', '.join(shared_tags)}",
-                        'reason': 'shared_tags'
-                    })
+                    detected_links.append(
+                        {
+                            "to_entry_id": other_entry.id,
+                            "to_entry_title": other_entry.title,
+                            "link_type": LinkType.REFERENCES,
+                            "strength": strength,
+                            "context": f"Shared tags: {', '.join(shared_tags)}",
+                            "reason": "shared_tags",
+                        }
+                    )
 
             # Check for shared projects
             if entry.projects and other_entry.projects:
-                shared_projects = {p.name for p in entry.projects} & {p.name for p in other_entry.projects}
+                shared_projects = {p.name for p in entry.projects} & {
+                    p.name for p in other_entry.projects
+                }
                 if shared_projects:
-                    detected_links.append({
-                        'to_entry_id': other_entry.id,
-                        'to_entry_title': other_entry.title,
-                        'link_type': LinkType.APPLIES_TO,
-                        'strength': 0.6,
-                        'context': f"Shared project: {', '.join(shared_projects)}",
-                        'reason': 'shared_project'
-                    })
+                    detected_links.append(
+                        {
+                            "to_entry_id": other_entry.id,
+                            "to_entry_title": other_entry.title,
+                            "link_type": LinkType.APPLIES_TO,
+                            "strength": 0.6,
+                            "context": f"Shared project: {', '.join(shared_projects)}",
+                            "reason": "shared_project",
+                        }
+                    )
 
         # Filter by minimum strength
-        detected_links = [link for link in detected_links if link['strength'] >= min_strength]
+        detected_links = [link for link in detected_links if link["strength"] >= min_strength]
 
         # Remove duplicates (keep highest strength)
         unique_links = {}
         for link in detected_links:
-            key = link['to_entry_id']
-            if key not in unique_links or link['strength'] > unique_links[key]['strength']:
+            key = link["to_entry_id"]
+            if key not in unique_links or link["strength"] > unique_links[key]["strength"]:
                 unique_links[key] = link
 
         return list(unique_links.values())
@@ -208,11 +224,11 @@ class LinkService:
         for link_data in detected:
             link = self.create_link(
                 from_entry_id=entry.id,
-                to_entry_id=link_data['to_entry_id'],
-                link_type=link_data['link_type'],
-                context=link_data.get('context'),
-                strength=link_data['strength'],
-                is_automatic=True
+                to_entry_id=link_data["to_entry_id"],
+                link_type=link_data["link_type"],
+                context=link_data.get("context"),
+                strength=link_data["strength"],
+                is_automatic=True,
             )
             if link:
                 created_count += 1
@@ -238,10 +254,7 @@ class LinkService:
         return total_links
 
     def find_related_entries(
-        self,
-        entry: Entry,
-        max_results: int = 10,
-        include_indirect: bool = True
+        self, entry: Entry, max_results: int = 10, include_indirect: bool = True
     ) -> List[Tuple[Entry, float]]:
         """
         Find entries related to given entry
@@ -270,26 +283,21 @@ class LinkService:
             for link in entry.outgoing_links:
                 for indirect_link in link.to_entry.outgoing_links:
                     if indirect_link.to_entry_id != entry.id:
-                        related_scores[indirect_link.to_entry_id] += \
+                        related_scores[indirect_link.to_entry_id] += (
                             link.strength * indirect_link.strength * 0.3
+                        )
 
         # Get entries and sort by score
-        sorted_entries = sorted(
-            related_scores.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:max_results]
+        sorted_entries = sorted(related_scores.items(), key=lambda x: x[1], reverse=True)[
+            :max_results
+        ]
 
         # Fetch full entries
         entry_ids = [eid for eid, _ in sorted_entries]
         entries = self.session.query(Entry).filter(Entry.id.in_(entry_ids)).all()
         entry_dict = {e.id: e for e in entries}
 
-        results = [
-            (entry_dict[eid], score)
-            for eid, score in sorted_entries
-            if eid in entry_dict
-        ]
+        results = [(entry_dict[eid], score) for eid, score in sorted_entries if eid in entry_dict]
 
         return results
 
@@ -300,46 +308,45 @@ class LinkService:
         total_links = self.session.query(func.count(EntryLink.id)).scalar()
 
         # Entries with/without links
-        entries_with_links = self.session.query(func.count(func.distinct(EntryLink.from_entry_id))).scalar()
+        entries_with_links = self.session.query(
+            func.count(func.distinct(EntryLink.from_entry_id))
+        ).scalar()
         orphaned_entries = total_entries - entries_with_links
 
         # Average links per entry
         avg_links = total_links / total_entries if total_entries > 0 else 0
 
         # Most connected entries
-        most_connected = self.session.query(
-            Entry.id,
-            Entry.title,
-            func.count(EntryLink.id).label('link_count')
-        )\
-            .join(EntryLink, or_(
-                Entry.id == EntryLink.from_entry_id,
-                Entry.id == EntryLink.to_entry_id
-            ))\
-            .group_by(Entry.id)\
-            .order_by(func.count(EntryLink.id).desc())\
-            .limit(10)\
+        most_connected = (
+            self.session.query(Entry.id, Entry.title, func.count(EntryLink.id).label("link_count"))
+            .join(
+                EntryLink,
+                or_(Entry.id == EntryLink.from_entry_id, Entry.id == EntryLink.to_entry_id),
+            )
+            .group_by(Entry.id)
+            .order_by(func.count(EntryLink.id).desc())
+            .limit(10)
             .all()
+        )
 
         # Link types distribution
-        link_types = self.session.query(
-            EntryLink.link_type,
-            func.count(EntryLink.id).label('count')
-        )\
-            .group_by(EntryLink.link_type)\
+        link_types = (
+            self.session.query(EntryLink.link_type, func.count(EntryLink.id).label("count"))
+            .group_by(EntryLink.link_type)
             .all()
+        )
 
         return {
-            'total_entries': total_entries,
-            'total_links': total_links,
-            'entries_with_links': entries_with_links,
-            'orphaned_entries': orphaned_entries,
-            'avg_links_per_entry': round(avg_links, 2),
-            'most_connected': [
-                {'id': e.id, 'title': e.title, 'link_count': count}
+            "total_entries": total_entries,
+            "total_links": total_links,
+            "entries_with_links": entries_with_links,
+            "orphaned_entries": orphaned_entries,
+            "avg_links_per_entry": round(avg_links, 2),
+            "most_connected": [
+                {"id": e.id, "title": e.title, "link_count": count}
                 for e, _, count in most_connected
             ],
-            'link_types': dict(link_types)
+            "link_types": dict(link_types),
         }
 
     def find_clusters(self, min_cluster_size: int = 3) -> List[List[str]]:
@@ -384,11 +391,7 @@ class LinkService:
 
         return clusters
 
-    def suggest_links_for_entry(
-        self,
-        entry: Entry,
-        limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    def suggest_links_for_entry(self, entry: Entry, limit: int = 10) -> List[Dict[str, Any]]:
         """
         Suggest potential links for an entry based on various signals
         Similar to detect_links but returns more detailed suggestions
@@ -397,9 +400,9 @@ class LinkService:
 
         # Filter out existing links
         existing_links = {link.to_entry_id for link in entry.outgoing_links}
-        suggestions = [s for s in suggestions if s['to_entry_id'] not in existing_links]
+        suggestions = [s for s in suggestions if s["to_entry_id"] not in existing_links]
 
         # Sort by strength
-        suggestions.sort(key=lambda x: x['strength'], reverse=True)
+        suggestions.sort(key=lambda x: x["strength"], reverse=True)
 
         return suggestions[:limit]

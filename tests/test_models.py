@@ -13,7 +13,7 @@ from kb.core.schemas import EntryType
 @pytest.fixture
 def db_session():
     """Create an in-memory SQLite database for testing"""
-    engine = create_engine('sqlite:///:memory:')
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -31,7 +31,7 @@ class TestEntry:
             title="Test Entry",
             content="Test content",
             entry_type="note",  # Use string instead of enum
-            source="manual"
+            source="manual",
         )
         db_session.add(entry)
         db_session.commit()
@@ -49,7 +49,7 @@ class TestEntry:
             content="This is a test with five words.",
             entry_type="note",
             source="manual",
-            word_count=7  # "This is a test with five words" = 7 words
+            word_count=7,  # "This is a test with five words" = 7 words
         )
         db_session.add(entry)
         db_session.commit()
@@ -66,7 +66,7 @@ class TestEntry:
             title="Tagged Entry",
             content="Content",
             entry_type="note",
-            source="manual"
+            source="manual",
         )
         entry.tags = [tag1, tag2]
 
@@ -78,17 +78,14 @@ class TestEntry:
 
     def test_entry_with_projects(self, db_session):
         """Test entry with projects"""
-        project = Project(
-            name="test-project",
-            description="Test project"
-        )
+        project = Project(name="test-project", description="Test project")
 
         entry = Entry(
             id="ent_test999",
             title="Project Entry",
             content="Content",
             entry_type="note",
-            source="manual"
+            source="manual",
         )
         entry.projects = [project]
 
@@ -129,10 +126,7 @@ class TestProject:
 
     def test_create_project(self, db_session):
         """Test creating a project"""
-        project = Project(
-            name="my-project",
-            description="A test project"
-        )
+        project = Project(name="my-project", description="A test project")
         db_session.add(project)
         db_session.commit()
 
@@ -150,21 +144,18 @@ class TestEntryLink:
             title="Source Entry",
             content="Content",
             entry_type="note",
-            source="manual"
+            source="manual",
         )
         entry2 = Entry(
             id="ent_link2",
             title="Target Entry",
             content="Content",
             entry_type="note",
-            source="manual"
+            source="manual",
         )
 
         link = EntryLink(
-            source_id=entry1.id,
-            target_id=entry2.id,
-            link_type="references",
-            strength=0.85
+            source_id=entry1.id, target_id=entry2.id, link_type="references", strength=0.85
         )
 
         db_session.add_all([entry1, entry2, link])
@@ -186,7 +177,7 @@ class TestEntryVersion:
             title="Versioned Entry",
             content="Original content",
             entry_type=EntryType.NOTE,
-            source="manual"
+            source="manual",
         )
 
         version = EntryVersion(
@@ -194,7 +185,7 @@ class TestEntryVersion:
             version_number=1,
             title="Versioned Entry",
             content="Original content",
-            content_hash="abc123"
+            content_hash="abc123",
         )
 
         db_session.add_all([entry, version])

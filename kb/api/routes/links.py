@@ -12,6 +12,7 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 def get_link_service(db: Session = Depends(get_session)):
     return LinkService(db)
 
@@ -20,7 +21,7 @@ def get_link_service(db: Session = Depends(get_session)):
 async def create_link(
     link_data: LinkCreate,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Create a link between two entries"""
 
@@ -29,14 +30,11 @@ async def create_link(
         to_entry_id=link_data.to_entry_id,
         link_type=link_data.link_type,
         context=link_data.context,
-        is_automatic=False
+        is_automatic=False,
     )
 
     if not link:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to create link"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to create link")
 
     return LinkResponse(
         id=link.id,
@@ -44,7 +42,7 @@ async def create_link(
         to_entry_id=link.to_entry_id,
         link_type=link.link_type,
         strength=link.strength,
-        created_at=link.created_at
+        created_at=link.created_at,
     )
 
 
@@ -52,7 +50,7 @@ async def create_link(
 async def delete_link(
     link_id: str,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Delete a link"""
 
@@ -60,8 +58,7 @@ async def delete_link(
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Link not found: {link_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Link not found: {link_id}"
         )
 
     return None
@@ -71,7 +68,7 @@ async def delete_link(
 async def get_links_from_entry(
     entry_id: str,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get all outgoing links from an entry"""
 
@@ -84,7 +81,7 @@ async def get_links_from_entry(
             to_entry_id=link.to_entry_id,
             link_type=link.link_type,
             strength=link.strength,
-            created_at=link.created_at
+            created_at=link.created_at,
         )
         for link in links
     ]
@@ -94,7 +91,7 @@ async def get_links_from_entry(
 async def get_links_to_entry(
     entry_id: str,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get all incoming links to an entry"""
 
@@ -107,7 +104,7 @@ async def get_links_to_entry(
             to_entry_id=link.to_entry_id,
             link_type=link.link_type,
             strength=link.strength,
-            created_at=link.created_at
+            created_at=link.created_at,
         )
         for link in links
     ]
@@ -118,7 +115,7 @@ async def detect_links(
     entry_id: str,
     min_strength: float = 0.5,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Detect and suggest potential links for an entry"""
 
@@ -131,16 +128,12 @@ async def detect_links(
     entry = entry_service.get_entry(entry_id)
     if not entry:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Entry not found: {entry_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Entry not found: {entry_id}"
         )
 
     suggestions = link_service.suggest_links_for_entry(entry, limit=20)
 
-    return {
-        "entry_id": entry_id,
-        "suggestions": suggestions
-    }
+    return {"entry_id": entry_id, "suggestions": suggestions}
 
 
 @router.post("/{entry_id}/auto-link")
@@ -148,7 +141,7 @@ async def auto_link_entry(
     entry_id: str,
     min_strength: float = 0.5,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Automatically create links for an entry"""
 
@@ -161,16 +154,12 @@ async def auto_link_entry(
     entry = entry_service.get_entry(entry_id)
     if not entry:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Entry not found: {entry_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Entry not found: {entry_id}"
         )
 
     count = link_service.auto_link_entry(entry, min_strength)
 
-    return {
-        "entry_id": entry_id,
-        "links_created": count
-    }
+    return {"entry_id": entry_id, "links_created": count}
 
 
 @router.get("/{entry_id}/related")
@@ -178,7 +167,7 @@ async def find_related(
     entry_id: str,
     max_results: int = 10,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Find entries related to this entry"""
 
@@ -192,8 +181,7 @@ async def find_related(
     entry = entry_service.get_entry(entry_id)
     if not entry:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Entry not found: {entry_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Entry not found: {entry_id}"
         )
 
     related = link_service.find_related_entries(entry, max_results=max_results)
@@ -209,9 +197,9 @@ async def find_related(
                 content=rel_entry.content[:200],  # Preview
                 tags=[tag.name for tag in rel_entry.tags],
                 projects=[proj.name for proj in rel_entry.projects],
-                version_count=len(rel_entry.versions)
+                version_count=len(rel_entry.versions),
             ),
-            "relevance_score": score
+            "relevance_score": score,
         }
         for rel_entry, score in related
     ]
@@ -220,7 +208,7 @@ async def find_related(
 @router.get("/graph/stats")
 async def graph_stats(
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Get knowledge graph statistics"""
 
@@ -232,7 +220,7 @@ async def graph_stats(
 async def find_clusters(
     min_size: int = 3,
     link_service: LinkService = Depends(get_link_service),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Find clusters of interconnected entries"""
 
@@ -240,17 +228,20 @@ async def find_clusters(
 
     # Get entry titles for clusters
     from ...core.models import Entry
+
     db = next(get_session())
 
     all_entry_ids = [eid for cluster in clusters for eid in cluster]
     entries = db.query(Entry).filter(Entry.id.in_(all_entry_ids)).all()
-    entry_dict = {e.id: {'id': e.id, 'title': e.title} for e in entries}
+    entry_dict = {e.id: {"id": e.id, "title": e.title} for e in entries}
 
     result = []
     for cluster in clusters:
-        result.append({
-            'size': len(cluster),
-            'entries': [entry_dict[eid] for eid in cluster if eid in entry_dict]
-        })
+        result.append(
+            {
+                "size": len(cluster),
+                "entries": [entry_dict[eid] for eid in cluster if eid in entry_dict],
+            }
+        )
 
     return {"clusters": result}

@@ -14,6 +14,7 @@ from .models import Base
 
 logger = logging.getLogger(__name__)
 
+
 class Database:
     def __init__(self, connection_string: str):
         """
@@ -27,7 +28,7 @@ class Database:
         self.connection_string = connection_string
 
         # Determine if SQLite or PostgreSQL
-        self.is_sqlite = connection_string.startswith('sqlite')
+        self.is_sqlite = connection_string.startswith("sqlite")
 
         # Create engine with appropriate settings
         if self.is_sqlite:
@@ -35,7 +36,7 @@ class Database:
                 connection_string,
                 connect_args={"check_same_thread": False},
                 poolclass=StaticPool,
-                echo=False
+                echo=False,
             )
         else:
             # PostgreSQL
@@ -44,13 +45,14 @@ class Database:
                 pool_pre_ping=True,  # Verify connections
                 pool_size=5,
                 max_overflow=10,
-                echo=False
+                echo=False,
             )
 
         self.SessionLocal = sessionmaker(
             autocommit=False,
             autoflush=False,
-            bind=self.engine
+            bind=self.engine,
+            expire_on_commit=False,  # keep instances usable after commit (for CLI printing)
         )
 
     def create_tables(self):
@@ -79,23 +81,52 @@ class Database:
 
 _db: Optional[Database] = None
 
+
 def init_db(connection_string: Optional[str | Path] = None) -> Database:
-    """Initialize database with given connection string or from config"""
+    """Initialize database with given connection string or from config.
+
+    Ensures that the SQLite database directory exists before engine creation
+    to avoid "unable to open database file" errors during early CLI startup.
+    """
     global _db
+
+    def _ensure_sqlite_dir(sqlite_conn: str | Path) -> str:
+        """Normalize to a sqlite:/// connection string and ensure parent dir exists."""
+        if isinstance(sqlite_conn, Path):
+            sqlite_conn.parent.mkdir(parents=True, exist_ok=True)
+            return f"sqlite:///{sqlite_conn}"
+        # It's a string. If it's a sqlite URL, try to extract the path portion.
+        if isinstance(sqlite_conn, str) and sqlite_conn.startswith("sqlite"):
+            # Handle forms like sqlite:////absolute/path or sqlite:///C:/path
+            path_part = sqlite_conn.split("sqlite:///")[-1]
+            try:
+                Path(path_part).parent.mkdir(parents=True, exist_ok=True)
+            except Exception:
+                # Best-effort: if parsing fails, continue without raising here
+                pass
+            return sqlite_conn
+        # Fallback: treat as path-like string
+        p = Path(sqlite_conn)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        return f"sqlite:///{p}"
 
     if connection_string is None:
         config = get_config()
 
         # Check for PostgreSQL config first
-        if hasattr(config, 'postgres_url') and config.postgres_url:
+        if hasattr(config, "postgres_url") and config.postgres_url:
             connection_string = config.postgres_url
         else:
-            # Fall back to SQLite
+            # Fall back to SQLite and ensure directory exists
             db_path = Path(config.data_dir) / "db" / "kb.db"
-            connection_string = f"sqlite:///{db_path}"
+            connection_string = _ensure_sqlite_dir(db_path)
     elif isinstance(connection_string, Path):
-        # Convert Path to SQLite connection string
-        connection_string = f"sqlite:///{connection_string}"
+        # Ensure directory exists and convert Path to SQLite connection string
+        connection_string = _ensure_sqlite_dir(connection_string)
+    else:
+        # If a sqlite connection string is provided as str, ensure its parent directory exists
+        if isinstance(connection_string, str) and connection_string.startswith("sqlite"):
+            connection_string = _ensure_sqlite_dir(connection_string)
 
     _db = Database(connection_string)
     _db.create_tables()

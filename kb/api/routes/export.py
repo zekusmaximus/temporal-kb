@@ -9,10 +9,10 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 @router.get("/json")
 async def export_json(
-    db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    db: Session = Depends(get_session), current_user: dict = Depends(get_current_user)
 ):
     """Export all entries as JSON"""
 
@@ -32,10 +32,10 @@ async def export_json(
                 "created_at": entry.created_at.isoformat(),
                 "updated_at": entry.updated_at.isoformat(),
                 "tags": [tag.name for tag in entry.tags],
-                "projects": [proj.name for proj in entry.projects]
+                "projects": [proj.name for proj in entry.projects],
             }
             for entry in entries
-        ]
+        ],
     }
 
     return Response(
@@ -43,5 +43,5 @@ async def export_json(
         media_type="application/json",
         headers={
             "Content-Disposition": f"attachment; filename=kb_export_{datetime.now().strftime('%Y%m%d')}.json"
-        }
+        },
     )

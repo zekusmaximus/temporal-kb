@@ -11,9 +11,9 @@ from ..ui import confirm_action, console, print_entry, print_error, print_versio
 
 
 @click.command()
-@click.argument('entry_id')
-@click.option('--version', '-v', type=int, help='Show specific version')
-@click.option('--history', '-h', is_flag=True, help='Show version history')
+@click.argument("entry_id")
+@click.option("--version", "-v", type=int, help="Show specific version")
+@click.option("--history", "-h", is_flag=True, help="Show version history")
 def show(entry_id, version, history):
     """Show a specific entry
 
@@ -44,9 +44,13 @@ def show(entry_id, version, history):
                     version_num = click.prompt("Version number", type=int)
                     content = entry_service.get_version_content(entry_id, version_num)
                     if content:
-                        console.print(Panel(Markdown(content),
-                                          title=f"Version {version_num}",
-                                          border_style="yellow"))
+                        console.print(
+                            Panel(
+                                Markdown(content),
+                                title=f"Version {version_num}",
+                                border_style="yellow",
+                            )
+                        )
                     else:
                         print_error(f"Version {version_num} not found")
 
@@ -54,9 +58,13 @@ def show(entry_id, version, history):
                 # Show specific version
                 content = entry_service.get_version_content(entry_id, version)
                 if content:
-                    console.print(Panel(Markdown(content),
-                                      title=f"{entry.title} (Version {version})",
-                                      border_style="yellow"))
+                    console.print(
+                        Panel(
+                            Markdown(content),
+                            title=f"{entry.title} (Version {version})",
+                            border_style="yellow",
+                        )
+                    )
                 else:
                     print_error(f"Version {version} not found")
 
@@ -78,5 +86,3 @@ def show(entry_id, version, history):
     except Exception as e:
         print_error(f"Failed to show entry: {str(e)}")
         raise
-
-

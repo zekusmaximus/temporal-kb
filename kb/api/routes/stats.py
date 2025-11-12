@@ -10,10 +10,10 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+
 @router.get("/overview")
 async def overview_stats(
-    db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    db: Session = Depends(get_session), current_user: dict = Depends(get_current_user)
 ):
     """Get overview statistics"""
 
@@ -24,12 +24,11 @@ async def overview_stats(
     total_links = db.query(func.count(EntryLink.id)).scalar()
 
     # Entry type distribution
-    type_dist = db.query(
-        Entry.entry_type,
-        func.count(Entry.id).label('count')
-    )\
-        .group_by(Entry.entry_type)\
+    type_dist = (
+        db.query(Entry.entry_type, func.count(Entry.id).label("count"))
+        .group_by(Entry.entry_type)
         .all()
+    )
 
     return {
         "total_entries": total_entries,
@@ -38,7 +37,5 @@ async def overview_stats(
         "total_projects": total_projects,
         "total_links": total_links,
         "avg_words_per_entry": total_words / total_entries if total_entries > 0 else 0,
-        "entry_type_distribution": dict(type_dist)
+        "entry_type_distribution": dict(type_dist),
     }
-
-

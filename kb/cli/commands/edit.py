@@ -18,14 +18,14 @@ from ..ui import (
 
 
 @click.command()
-@click.argument('entry_id')
-@click.option('--title', '-t', help='New title')
-@click.option('--content', '-c', help='New content')
-@click.option('--editor', '-e', is_flag=True, help='Open editor')
-@click.option('--add-tag', 'add_tags', multiple=True, help='Add tags')
-@click.option('--remove-tag', 'remove_tags', multiple=True, help='Remove tags')
-@click.option('--add-project', 'add_projects', multiple=True, help='Add projects')
-@click.option('--remove-project', 'remove_projects', multiple=True, help='Remove projects')
+@click.argument("entry_id")
+@click.option("--title", "-t", help="New title")
+@click.option("--content", "-c", help="New content")
+@click.option("--editor", "-e", is_flag=True, help="Open editor")
+@click.option("--add-tag", "add_tags", multiple=True, help="Add tags")
+@click.option("--remove-tag", "remove_tags", multiple=True, help="Remove tags")
+@click.option("--add-project", "add_projects", multiple=True, help="Add projects")
+@click.option("--remove-project", "remove_projects", multiple=True, help="Remove projects")
 def edit(entry_id, title, content, editor, add_tags, remove_tags, add_projects, remove_projects):
     """Edit an existing entry
 
@@ -81,8 +81,14 @@ def edit(entry_id, title, content, editor, add_tags, remove_tags, add_projects, 
                 update_data.projects = list(current_projects)
 
             # Apply update
-            if any([update_data.title, update_data.content,
-                    update_data.tags is not None, update_data.projects is not None]):
+            if any(
+                [
+                    update_data.title,
+                    update_data.content,
+                    update_data.tags is not None,
+                    update_data.projects is not None,
+                ]
+            ):
 
                 if confirm_action("Save changes?", default=True):
                     updated_entry = entry_service.update_entry(entry_id, update_data)
@@ -91,6 +97,7 @@ def edit(entry_id, title, content, editor, add_tags, remove_tags, add_projects, 
 
                     # Git commit
                     from .add import _git_commit
+
                     _git_commit(updated_entry, "update")
                 else:
                     print_warning("Changes discarded")
