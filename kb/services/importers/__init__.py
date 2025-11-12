@@ -7,9 +7,9 @@ from .browser_importer import BrowserHistoryImporter
 from .chat_importer import ChatExportImporter
 
 __all__ = [
-    'ImporterBase',
-    'MarkdownImporter',
-    'EmailImporter',
-    'BrowserHistoryImporter',
-    'ChatExportImporter',
+    "ImporterBase",
+    "MarkdownImporter",
+    "EmailImporter",
+    "BrowserHistoryImporter",
+    "ChatExportImporter",
 ]

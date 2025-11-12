@@ -27,7 +27,7 @@ app = FastAPI(
     description="Personal knowledge management with temporal intelligence",
     version="0.1.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS configuration
@@ -39,31 +39,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Exception handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail}
-    )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
 
 # Health check
 @app.get("/health", tags=["system"])
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "version": "0.1.0"
-    }
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat(), "version": "0.1.0"}
+
 
 # Root endpoint
 @app.get("/", tags=["system"])
@@ -73,8 +67,9 @@ async def root():
         "name": "Temporal Knowledge Base API",
         "version": "0.1.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
+
 
 # Include routers
 app.include_router(entries.router, prefix="/api/v1/entries", tags=["entries"])
@@ -86,12 +81,14 @@ app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"]
 app.include_router(stats.router, prefix="/api/v1/stats", tags=["statistics"])
 app.include_router(export.router, prefix="/api/v1/export", tags=["export"])
 
+
 # Startup event
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting Temporal Knowledge Base API")
     logger.info(f"Data directory: {config.data_dir}")
     logger.info(f"Database: {config.db_path}")
+
 
 # Shutdown event
 @app.on_event("shutdown")
@@ -101,9 +98,5 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "kb.api.main:app",
-        host=config.api_host,
-        port=config.api_port,
-        reload=True
-    )
+
+    uvicorn.run("kb.api.main:app", host=config.api_host, port=config.api_port, reload=True)

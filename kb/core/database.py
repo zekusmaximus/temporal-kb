@@ -13,28 +13,29 @@ from .models import Base
 
 logger = logging.getLogger(__name__)
 
+
 class Database:
     def __init__(self, connection_string: str):
         """
         Initialize database with connection string
-        
+
         Args:
             connection_string: SQLite or PostgreSQL connection string
                 SQLite: "sqlite:///path/to/db.db"
                 PostgreSQL: "postgresql://user:pass@host:5432/dbname"
         """
         self.connection_string = connection_string
-        
+
         # Determine if SQLite or PostgreSQL
-        self.is_sqlite = connection_string.startswith('sqlite')
-        
+        self.is_sqlite = connection_string.startswith("sqlite")
+
         # Create engine with appropriate settings
         if self.is_sqlite:
             self.engine = create_engine(
                 connection_string,
                 connect_args={"check_same_thread": False},
                 poolclass=StaticPool,
-                echo=False
+                echo=False,
             )
         else:
             # PostgreSQL
@@ -43,24 +44,20 @@ class Database:
                 pool_pre_ping=True,  # Verify connections
                 pool_size=5,
                 max_overflow=10,
-                echo=False
+                echo=False,
             )
-        
-        self.SessionLocal = sessionmaker(
-            autocommit=False,
-            autoflush=False,
-            bind=self.engine
-        )
-    
+
+        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+
     def create_tables(self):
         """Create all tables if they don't exist"""
         Base.metadata.create_all(bind=self.engine)
         logger.info("Database tables created")
-    
+
     def get_session(self) -> Session:
         """Get a new database session"""
         return self.SessionLocal()
-    
+
     @contextmanager
     def session_scope(self) -> Generator[Session, None, None]:
         """Provide a transactional scope around a series of operations"""
@@ -78,15 +75,16 @@ class Database:
 
 _db: Optional[Database] = None
 
+
 def init_db(connection_string: Optional[str | Path] = None) -> Database:
     """Initialize database with given connection string or from config"""
     global _db
-    
+
     if connection_string is None:
         config = get_config()
-        
+
         # Check for PostgreSQL config first
-        if hasattr(config, 'postgres_url') and config.postgres_url:
+        if hasattr(config, "postgres_url") and config.postgres_url:
             connection_string = config.postgres_url
         else:
             # Fall back to SQLite
@@ -95,7 +93,7 @@ def init_db(connection_string: Optional[str | Path] = None) -> Database:
     elif isinstance(connection_string, Path):
         # Convert Path to SQLite connection string
         connection_string = f"sqlite:///{connection_string}"
-    
+
     _db = Database(connection_string)
     _db.create_tables()
     return _db

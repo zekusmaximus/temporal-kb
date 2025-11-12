@@ -26,7 +26,7 @@ def extract_yaml_frontmatter(text: str) -> Tuple[Optional[Dict[str, Any]], str]:
         return None, text
 
     raw_yaml = match.group(1)
-    body = text[match.end():]
+    body = text[match.end() :]
 
     try:
         data = yaml.safe_load(raw_yaml) if raw_yaml.strip() else None

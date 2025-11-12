@@ -22,9 +22,9 @@ setup(
         "sentence-transformers>=2.2.0",
     ],
     entry_points={
-        'console_scripts': [
-            'kb=kb.cli.main:main',
+        "console_scripts": [
+            "kb=kb.cli.main:main",
         ],
     },
-    python_requires='>=3.10',
+    python_requires=">=3.10",
 )

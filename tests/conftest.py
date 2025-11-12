@@ -25,13 +25,13 @@ def test_data_dir():
 @pytest.fixture
 def clean_db():
     """Create a clean in-memory database for each test"""
-    engine = create_engine('sqlite:///:memory:', echo=False)
+    engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    
+
     yield session
-    
+
     session.close()
     Base.metadata.drop_all(engine)
 
@@ -45,7 +45,7 @@ def sample_entry_data():
         "entry_type": "note",
         "source": "manual",
         "tags": ["test", "sample"],
-        "projects": []
+        "projects": [],
     }
 
 
@@ -55,9 +55,5 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "unit: marks tests as unit tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "unit: marks tests as unit tests")
