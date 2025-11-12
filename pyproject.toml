@@ -112,3 +112,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --cov=kb --cov-report=term-missing"
+
+[tool.poetry.dependencies]
+# ... existing dependencies ...
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+python-multipart = "^0.0.6"

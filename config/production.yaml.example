@@ -1,0 +1,61 @@
+# Temporal KB Production Configuration
+# Copy this file to production.yaml and customize
+
+# Data storage - Use absolute paths in production
+data_dir: /var/lib/temporal-kb/data
+config_dir: /etc/temporal-kb
+
+# Database - PostgreSQL recommended for production
+postgres_url: postgresql://kb_user:CHANGE_ME@localhost:5432/temporal_kb
+
+# File storage
+entries_dir: /var/lib/temporal-kb/data/entries
+vector_db_path: /var/lib/temporal-kb/data/vectors
+
+# Vector search settings
+embedding_model: all-MiniLM-L6-v2
+semantic_search_enabled: true
+fts_enabled: true
+
+# Git version control
+git_enabled: true
+git_auto_commit: true
+git_remote: git@github.com:yourusername/kb-data-private.git
+
+# Encryption - STRONGLY RECOMMENDED for production
+encryption_enabled: true
+master_key_path: /etc/temporal-kb/master.key
+
+# API settings
+api_host: 0.0.0.0  # Listen on all interfaces
+api_port: 8000
+api_cors_origins:
+  - https://kb.yourdomain.com
+  - https://app.yourdomain.com
+
+# Authentication - REQUIRED for production
+api_keys:
+  - CHANGE_ME_LONG_RANDOM_STRING_1
+  - CHANGE_ME_LONG_RANDOM_STRING_2
+jwt_secret: CHANGE_ME_VERY_LONG_RANDOM_SECRET
+
+# Logging
+log_level: INFO
+log_file: /var/log/temporal-kb/kb.log
+
+# Production-specific settings
+debug: false
+
+# Performance tuning (optional)
+# database_pool_size: 10
+# database_max_overflow: 20
+# vector_store_batch_size: 100
+
+# Backup settings (managed externally)
+# backup_dir: /var/backups/temporal-kb
+# backup_retention_days: 30
+
+# Security headers (if using reverse proxy)
+# trusted_hosts:
+#   - kb.yourdomain.com
+# secure_cookies: true
