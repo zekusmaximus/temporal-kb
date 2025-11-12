@@ -1,17 +1,15 @@
 # kb/api/main.py
 
-from fastapi import FastAPI, HTTPException, Depends, Query, status
+import logging
+from datetime import datetime
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime
-import logging
 
-from ..core.database import get_db, get_session
 from ..core.config import get_config
-from .routes import entries, search, links, temporal, tags, projects, stats, export
-from .dependencies import get_current_user, APIKey
+from ..core.database import get_db
+from .routes import entries, export, links, projects, search, stats, tags, temporal
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

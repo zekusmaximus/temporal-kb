@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import uuid
 import hashlib
+import uuid
 
 
 def generate_id(prefix: str = "ent", length: int = 12) -> str:

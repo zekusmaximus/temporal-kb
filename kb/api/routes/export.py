@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.orm import Session
 import json
 from datetime import datetime
 
+from fastapi import APIRouter, Depends, Response
+from sqlalchemy.orm import Session
+
 from ...core.database import get_session
-from ...services.entry_service import EntryService
-from ...storage.file_manager import FileManager
 from ..dependencies import get_current_user
 
 router = APIRouter()
@@ -16,11 +15,11 @@ async def export_json(
     current_user: dict = Depends(get_current_user)
 ):
     """Export all entries as JSON"""
-    
+
     from ...core.models import Entry
-    
+
     entries = db.query(Entry).all()
-    
+
     export_data = {
         "exported_at": datetime.utcnow().isoformat(),
         "version": "1.0",
@@ -38,7 +37,7 @@ async def export_json(
             for entry in entries
         ]
     }
-    
+
     return Response(
         content=json.dumps(export_data, indent=2),
         media_type="application/json",
