@@ -7,8 +7,8 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 
 import { RootStackParamList, MainTabParamList } from '../navigation/types';
 import { LoadingState } from '../components/LoadingState';
-import { apiClient } from '../api/client';
-import { spacing } from '../theme';
+import { apiClient, Stats, Tag, Project } from '../api/client';
+import { spacing, colors } from '../theme';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Profile'>,
@@ -17,15 +17,15 @@ type Props = CompositeScreenProps<
 
 export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-  const [tags, setTags] = useState<string[]>([]);
-  const [projects, setProjects] = useState<string[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    loadProfileData();
+    void loadProfileData();
   }, []);
 
-  const loadProfileData = async () => {
+  const loadProfileData = async (): Promise<void> => {
     try {
       setLoading(true);
       const [statsData, tagsData, projectsData] = await Promise.all([
@@ -43,7 +43,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSettingsPress = () => {
+  const handleSettingsPress = (): void => {
     navigation.navigate('Settings');
   };
 
@@ -76,11 +76,11 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               <Divider style={styles.divider} />
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
-                  <Text variant="displaySmall">{stats.total_tags}</Text>
+                  <Text variant="displaySmall">{stats.tags_count}</Text>
                   <Text variant="bodyMedium">Tags</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text variant="displaySmall">{stats.total_projects}</Text>
+                  <Text variant="displaySmall">{stats.projects_count}</Text>
                   <Text variant="bodyMedium">Projects</Text>
                 </View>
               </View>
@@ -93,8 +93,9 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           <Card.Content>
             {tags.slice(0, 10).map((tag) => (
               <List.Item
-                key={tag}
-                title={tag}
+                key={tag.name}
+                title={tag.name}
+                description={`${tag.count} entries`}
                 left={(props) => <List.Icon {...props} icon="tag" />}
               />
             ))}
@@ -111,8 +112,9 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           <Card.Content>
             {projects.slice(0, 10).map((project) => (
               <List.Item
-                key={project}
-                title={project}
+                key={project.name}
+                title={project.name}
+                description={`${project.entry_count} entries`}
                 left={(props) => <List.Icon {...props} icon="folder" />}
               />
             ))}
@@ -129,6 +131,9 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: spacing.md,
+  },
   container: {
     flex: 1,
   },
@@ -136,23 +141,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  card: {
-    marginBottom: spacing.md,
+  divider: {
+    marginVertical: spacing.sm,
+  },
+  moreText: {
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  statItem: {
+    alignItems: 'center',
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: spacing.md,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  divider: {
-    marginVertical: spacing.sm,
-  },
-  moreText: {
-    textAlign: 'center',
-    color: '#666',
-    marginTop: spacing.sm,
   },
 });

@@ -13,7 +13,7 @@ import { EmptyState } from '../components/EmptyState';
 import { apiClient } from '../api/client';
 import { useStore } from '../store';
 import { Entry, SemanticSearchResult } from '../types';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Search'>,
@@ -27,7 +27,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
   const [semanticResults, setSemanticResults] = useState<SemanticSearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string): Promise<void> => {
     try {
       setIsLoading(true);
       setHasSearched(true);
@@ -48,11 +48,11 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleEntryPress = (entryId: string) => {
+  const handleEntryPress = (entryId: string): void => {
     navigation.navigate('EntryDetail', { entryId });
   };
 
-  const displayResults = searchMode === 'keyword' ? results : semanticResults.map(r => r.entry);
+  const displayResults = searchMode === 'keyword' ? results : semanticResults.map((r) => r.entry);
 
   return (
     <View style={styles.container}>
@@ -64,7 +64,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
 
       <SegmentedButtons
         value={searchMode}
-        onValueChange={(value) => setSearchMode(value as 'keyword' | 'semantic')}
+        onValueChange={(value) => setSearchMode(value)}
         buttons={[
           { value: 'keyword', label: 'Keyword' },
           { value: 'semantic', label: 'Semantic' },
@@ -90,10 +90,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
             <View>
-              <EntryCard
-                entry={item}
-                onPress={() => handleEntryPress(item.id)}
-              />
+              <EntryCard entry={item} onPress={() => handleEntryPress(item.id)} />
               {searchMode === 'semantic' && semanticResults[index] && (
                 <Text variant="labelSmall" style={styles.score}>
                   Similarity: {(semanticResults[index].similarity_score * 100).toFixed(1)}%
@@ -112,17 +109,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  segmented: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-  },
   list: {
     paddingBottom: spacing.xl,
   },
   score: {
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
     marginHorizontal: spacing.md,
     marginTop: -spacing.sm,
-    marginBottom: spacing.sm,
-    color: '#666',
+  },
+  segmented: {
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.md,
   },
 });

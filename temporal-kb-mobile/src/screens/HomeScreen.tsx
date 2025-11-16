@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { Appbar, FAB } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,36 +20,36 @@ type Props = CompositeScreenProps<
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const { entries, isLoading } = useStore();
-  const { loadRecent, error } = useEntries();
+  const { loadRecent } = useEntries();
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadInitial();
-  }, []);
-
-  const loadInitial = async () => {
+  const loadInitial = useCallback(async (): Promise<void> => {
     try {
       await loadRecent(20);
     } catch (err) {
       console.error('Failed to load entries:', err);
     }
-  };
+  }, [loadRecent]);
 
-  const handleRefresh = async () => {
+  useEffect(() => {
+    void loadInitial();
+  }, [loadInitial]);
+
+  const handleRefresh = async (): Promise<void> => {
     setRefreshing(true);
     await loadInitial();
     setRefreshing(false);
   };
 
-  const handleEntryPress = (entryId: string) => {
+  const handleEntryPress = (entryId: string): void => {
     navigation.navigate('EntryDetail', { entryId });
   };
 
-  const handleCreatePress = () => {
+  const handleCreatePress = (): void => {
     navigation.navigate('CreateEntry');
   };
 
-  const handleSettingsPress = () => {
+  const handleSettingsPress = (): void => {
     navigation.navigate('Settings');
   };
 
@@ -78,11 +78,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           actionLabel="Create Entry"
           onAction={handleCreatePress}
         />
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={handleCreatePress}
-        />
+        <FAB icon="plus" style={styles.fab} onPress={handleCreatePress} />
       </View>
     );
   }
@@ -98,22 +94,15 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         data={entries}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <EntryCard
-            entry={item}
-            onPress={() => handleEntryPress(item.id)}
-          />
+          <EntryCard entry={item} onPress={() => handleEntryPress(item.id)} />
         )}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => void handleRefresh()} />
         }
         contentContainerStyle={styles.list}
       />
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={handleCreatePress}
-      />
+      <FAB icon="plus" style={styles.fab} onPress={handleCreatePress} />
     </View>
   );
 };
@@ -122,12 +111,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  list: {
-    paddingBottom: spacing.xl,
-  },
   fab: {
+    bottom: spacing.md,
     position: 'absolute',
     right: spacing.md,
-    bottom: spacing.md,
+  },
+  list: {
+    paddingBottom: spacing.xl,
   },
 });

@@ -7,6 +7,34 @@ const STORAGE_KEYS = {
   API_KEY: '@temporal_kb:api_key',
 };
 
+export interface HealthCheckResponse {
+  status: 'healthy' | 'degraded';
+  version?: string;
+  timestamp?: string;
+}
+
+export interface Tag {
+  name: string;
+  count: number;
+}
+
+export interface Project {
+  name: string;
+  entry_count: number;
+}
+
+export interface Stats {
+  total_entries: number;
+  total_words: number;
+  tags_count: number;
+  projects_count: number;
+}
+
+export interface ApiConfig {
+  baseUrl: string;
+  apiKey: string;
+}
+
 class TemporalKBClient {
   private client: AxiosInstance;
   private baseUrl: string = '';
@@ -34,8 +62,15 @@ class TemporalKBClient {
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
+      (error: unknown) => {
+        // Type guard for axios error
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error &&
+          typeof (error as { response?: { status?: number } }).response === 'object' &&
+          (error as { response?: { status?: number } }).response?.status === 401
+        ) {
           // Handle unauthorized
           console.error('Unauthorized - check API key');
         }
@@ -44,7 +79,7 @@ class TemporalKBClient {
     );
   }
 
-  async initialize() {
+  async initialize(): Promise<void> {
     const [url, key] = await Promise.all([
       AsyncStorage.getItem(STORAGE_KEYS.API_URL),
       AsyncStorage.getItem(STORAGE_KEYS.API_KEY),
@@ -56,7 +91,7 @@ class TemporalKBClient {
     this.client.defaults.baseURL = this.baseUrl;
   }
 
-  async setConfig(baseUrl: string, apiKey: string) {
+  async setConfig(baseUrl: string, apiKey: string): Promise<void> {
     this.baseUrl = baseUrl;
     this.apiKey = apiKey;
     this.client.defaults.baseURL = baseUrl;
@@ -67,7 +102,7 @@ class TemporalKBClient {
     ]);
   }
 
-  async getConfig() {
+  getConfig(): ApiConfig {
     return {
       baseUrl: this.baseUrl,
       apiKey: this.apiKey,
@@ -75,29 +110,29 @@ class TemporalKBClient {
   }
 
   // Health check
-  async healthCheck() {
-    const response = await this.client.get('/health');
+  async healthCheck(): Promise<HealthCheckResponse> {
+    const response = await this.client.get<HealthCheckResponse>('/health');
     return response.data;
   }
 
   // Entries
   async getEntries(params?: SearchParams): Promise<Entry[]> {
-    const response = await this.client.get('/api/v1/search', { params });
+    const response = await this.client.get<Entry[]>('/api/v1/search', { params });
     return response.data;
   }
 
   async getEntry(id: string): Promise<Entry> {
-    const response = await this.client.get(`/api/v1/entries/${id}`);
+    const response = await this.client.get<Entry>(`/api/v1/entries/${id}`);
     return response.data;
   }
 
   async createEntry(data: EntryCreate): Promise<Entry> {
-    const response = await this.client.post('/api/v1/entries', data);
+    const response = await this.client.post<Entry>('/api/v1/entries', data);
     return response.data;
   }
 
   async updateEntry(id: string, data: Partial<EntryCreate>): Promise<Entry> {
-    const response = await this.client.put(`/api/v1/entries/${id}`, data);
+    const response = await this.client.put<Entry>(`/api/v1/entries/${id}`, data);
     return response.data;
   }
 
@@ -107,21 +142,21 @@ class TemporalKBClient {
 
   // Search
   async search(query: string, params?: Omit<SearchParams, 'q'>): Promise<Entry[]> {
-    const response = await this.client.get('/api/v1/search', {
+    const response = await this.client.get<Entry[]>('/api/v1/search', {
       params: { q: query, ...params },
     });
     return response.data;
   }
 
   async semanticSearch(query: string, limit: number = 10): Promise<SemanticSearchResult[]> {
-    const response = await this.client.get('/api/v1/search/semantic', {
+    const response = await this.client.get<SemanticSearchResult[]>('/api/v1/search/semantic', {
       params: { q: query, limit },
     });
     return response.data;
   }
 
   async getRecent(limit: number = 20): Promise<Entry[]> {
-    const response = await this.client.get('/api/v1/search/recent', {
+    const response = await this.client.get<Entry[]>('/api/v1/search/recent', {
       params: { limit },
     });
     return response.data;
@@ -129,7 +164,7 @@ class TemporalKBClient {
 
   // Links
   async getRelatedEntries(entryId: string, maxResults: number = 10): Promise<RelatedEntry[]> {
-    const response = await this.client.get(`/api/v1/links/${entryId}/related`, {
+    const response = await this.client.get<RelatedEntry[]>(`/api/v1/links/${entryId}/related`, {
       params: { max_results: maxResults },
     });
     return response.data;
@@ -137,25 +172,25 @@ class TemporalKBClient {
 
   // Temporal
   async getOnThisDay(): Promise<Entry[]> {
-    const response = await this.client.get('/api/v1/temporal/on-this-day');
+    const response = await this.client.get<Entry[]>('/api/v1/temporal/on-this-day');
     return response.data;
   }
 
   // Tags
-  async getTags() {
-    const response = await this.client.get('/api/v1/tags');
+  async getTags(): Promise<Tag[]> {
+    const response = await this.client.get<Tag[]>('/api/v1/tags');
     return response.data;
   }
 
   // Projects
-  async getProjects() {
-    const response = await this.client.get('/api/v1/projects');
+  async getProjects(): Promise<Project[]> {
+    const response = await this.client.get<Project[]>('/api/v1/projects');
     return response.data;
   }
 
   // Stats
-  async getStats() {
-    const response = await this.client.get('/api/v1/stats/overview');
+  async getStats(): Promise<Stats> {
+    const response = await this.client.get<Stats>('/api/v1/stats/overview');
     return response.data;
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 interface EmptyStateProps {
   title: string;
@@ -35,22 +35,22 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 };
 
 const styles = StyleSheet.create({
+  button: {
+    marginTop: spacing.md,
+  },
   container: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: spacing.xl,
+  },
+  message: {
+    color: colors.text.secondary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
   },
   title: {
     marginBottom: spacing.sm,
     textAlign: 'center',
-  },
-  message: {
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-    color: '#666',
-  },
-  button: {
-    marginTop: spacing.md,
   },
 });

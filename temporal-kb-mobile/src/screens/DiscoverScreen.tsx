@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 
 import { RootStackParamList, MainTabParamList } from '../navigation/types';
 import { LoadingState } from '../components/LoadingState';
-import { apiClient } from '../api/client';
+import { apiClient, Stats } from '../api/client';
 import { Entry } from '../types';
 import { spacing } from '../theme';
 
@@ -20,13 +20,13 @@ type Props = CompositeScreenProps<
 export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [onThisDayEntries, setOnThisDayEntries] = useState<Entry[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    loadDiscoverData();
+    void loadDiscoverData();
   }, []);
 
-  const loadDiscoverData = async () => {
+  const loadDiscoverData = async (): Promise<void> => {
     try {
       setLoading(true);
       const [onThisDay, statsData] = await Promise.all([
@@ -42,7 +42,7 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleEntryPress = (entryId: string) => {
+  const handleEntryPress = (entryId: string): void => {
     navigation.navigate('EntryDetail', { entryId });
   };
 
@@ -71,11 +71,11 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
                   <Text variant="bodySmall">Words</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text variant="headlineMedium">{stats.total_tags}</Text>
+                  <Text variant="headlineMedium">{stats.tags_count}</Text>
                   <Text variant="bodySmall">Tags</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text variant="headlineMedium">{stats.total_projects}</Text>
+                  <Text variant="headlineMedium">{stats.projects_count}</Text>
                   <Text variant="bodySmall">Projects</Text>
                 </View>
               </View>
@@ -85,10 +85,7 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
 
         {onThisDayEntries.length > 0 && (
           <Card style={styles.card}>
-            <Card.Title
-              title="On This Day"
-              subtitle={format(new Date(), 'MMMM d')}
-            />
+            <Card.Title title="On This Day" subtitle={format(new Date(), 'MMMM d')} />
             <Card.Content>
               {onThisDayEntries.map((entry) => (
                 <Button
@@ -109,6 +106,9 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: spacing.md,
+  },
   container: {
     flex: 1,
   },
@@ -116,19 +116,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  card: {
-    marginBottom: spacing.md,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.lg,
+  entryButton: {
+    marginBottom: spacing.sm,
   },
   statItem: {
     alignItems: 'center',
     minWidth: 80,
   },
-  entryButton: {
-    marginBottom: spacing.sm,
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.lg,
   },
 });

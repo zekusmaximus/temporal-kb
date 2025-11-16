@@ -4,7 +4,7 @@ import { Searchbar } from 'react-native-paper';
 import { spacing } from '../theme';
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string) => void | Promise<void>;
   placeholder?: string;
 }
 
@@ -14,9 +14,9 @@ export const SearchBarComponent: React.FC<SearchBarProps> = ({
 }) => {
   const [query, setQuery] = useState('');
 
-  const handleSearch = () => {
+  const handleSearch = (): void => {
     if (query.trim()) {
-      onSearch(query.trim());
+      void onSearch(query.trim());
     }
   };
 

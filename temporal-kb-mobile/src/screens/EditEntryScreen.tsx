@@ -29,7 +29,13 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   const [entryType, setEntryType] = useState(entry.entry_type);
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
 
-  const { control, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormData>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<FormData>({
     defaultValues: {
       title: entry.title,
       content: entry.content,
@@ -41,29 +47,35 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   const tags = watch('tags');
   const projects = watch('projects');
 
-  const handleAddTag = () => {
+  const handleAddTag = (): void => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setValue('tags', [...tags, tagInput.trim()]);
       setTagInput('');
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setValue('tags', tags.filter((t) => t !== tag));
+  const handleRemoveTag = (tag: string): void => {
+    setValue(
+      'tags',
+      tags.filter((t) => t !== tag)
+    );
   };
 
-  const handleAddProject = () => {
+  const handleAddProject = (): void => {
     if (projectInput.trim() && !projects.includes(projectInput.trim())) {
       setValue('projects', [...projects, projectInput.trim()]);
       setProjectInput('');
     }
   };
 
-  const handleRemoveProject = (project: string) => {
-    setValue('projects', projects.filter((p) => p !== project));
+  const handleRemoveProject = (project: string): void => {
+    setValue(
+      'projects',
+      projects.filter((p) => p !== project)
+    );
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormData): Promise<void> => {
     try {
       setSaving(true);
       const entryData: Partial<EntryCreate> = {
@@ -92,7 +104,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
         <Appbar.Content title="Edit Entry" />
         <Appbar.Action
           icon="check"
-          onPress={handleSubmit(onSubmit)}
+          onPress={() => void handleSubmit(onSubmit)()}
           disabled={saving}
         />
       </Appbar.Header>
@@ -169,11 +181,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
           />
           <View style={styles.chips}>
             {tags.map((tag) => (
-              <Chip
-                key={tag}
-                onClose={() => handleRemoveTag(tag)}
-                style={styles.chip}
-              >
+              <Chip key={tag} onClose={() => handleRemoveTag(tag)} style={styles.chip}>
                 {tag}
               </Chip>
             ))}
@@ -206,7 +214,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <Button
           mode="contained"
-          onPress={handleSubmit(onSubmit)}
+          onPress={() => void handleSubmit(onSubmit)()}
           loading={saving}
           disabled={saving}
           style={styles.submitButton}
@@ -219,6 +227,14 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  chip: {
+    marginBottom: spacing.xs,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
   container: {
     flex: 1,
   },
@@ -226,28 +242,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  input: {
-    marginBottom: spacing.md,
-  },
   contentInput: {
     minHeight: 200,
   },
-  typeButton: {
+  input: {
     marginBottom: spacing.md,
   },
   section: {
     marginBottom: spacing.lg,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  chip: {
-    marginBottom: spacing.xs,
-  },
   submitButton: {
-    marginTop: spacing.md,
     marginBottom: spacing.xl,
+    marginTop: spacing.md,
+  },
+  typeButton: {
+    marginBottom: spacing.md,
   },
 });
