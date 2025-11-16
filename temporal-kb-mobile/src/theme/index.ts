@@ -39,3 +39,24 @@ export const borderRadius = {
   md: 8,
   lg: 12,
 };
+
+export const colors = {
+  text: {
+    primary: '#000000',
+    secondary: '#666666',
+    tertiary: '#999999',
+  },
+  code: {
+    background: '#f5f5f5',
+  },
+  dark: {
+    text: {
+      primary: '#FFFFFF',
+      secondary: '#AAAAAA',
+      tertiary: '#888888',
+    },
+    code: {
+      background: '#2a2a2a',
+    },
+  },
+};

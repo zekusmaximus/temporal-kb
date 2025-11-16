@@ -7,6 +7,7 @@ import { RootStackParamList } from '../navigation/types';
 import { apiClient } from '../api/client';
 import { useStore } from '../store';
 import { spacing } from '../theme';
+import { getErrorMessage } from '@/utils/errors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -59,13 +60,14 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setTesting(true);
       await apiClient.setConfig(apiUrl.trim(), apiKey.trim());
-      const response = await apiClient.healthCheck();
+      await apiClient.healthCheck();
       Alert.alert('Success', 'Connection successful!');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
       console.error('Connection test failed:', error);
       Alert.alert(
         'Connection Failed',
-        error.message || 'Could not connect to the API. Please check your settings.'
+        message || 'Could not connect to the API. Please check your settings.'
       );
     } finally {
       setTesting(false);
@@ -135,9 +137,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               title="Dark Mode"
               description="Switch between light and dark themes"
               left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
-              right={() => (
-                <Switch value={isDarkMode} onValueChange={toggleDarkMode} />
-              )}
+              right={() => <Switch value={isDarkMode} onValueChange={toggleDarkMode} />}
             />
           </Card.Content>
         </Card>
@@ -164,6 +164,12 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  button: {
+    marginTop: spacing.sm,
+  },
+  card: {
+    marginBottom: spacing.md,
+  },
   container: {
     flex: 1,
   },
@@ -171,13 +177,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  card: {
-    marginBottom: spacing.md,
-  },
   input: {
     marginBottom: spacing.md,
-  },
-  button: {
-    marginTop: spacing.sm,
   },
 });

@@ -85,10 +85,7 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
 
         {onThisDayEntries.length > 0 && (
           <Card style={styles.card}>
-            <Card.Title
-              title="On This Day"
-              subtitle={format(new Date(), 'MMMM d')}
-            />
+            <Card.Title title="On This Day" subtitle={format(new Date(), 'MMMM d')} />
             <Card.Content>
               {onThisDayEntries.map((entry) => (
                 <Button
@@ -109,6 +106,9 @@ export const DiscoverScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: spacing.md,
+  },
   container: {
     flex: 1,
   },
@@ -116,19 +116,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  card: {
-    marginBottom: spacing.md,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.lg,
+  entryButton: {
+    marginBottom: spacing.sm,
   },
   statItem: {
     alignItems: 'center',
     minWidth: 80,
   },
-  entryButton: {
-    marginBottom: spacing.sm,
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.lg,
   },
 });

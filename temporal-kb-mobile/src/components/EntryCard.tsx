@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Card, Text, Chip } from 'react-native-paper';
 import { format } from 'date-fns';
 import { Entry } from '../types';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 interface EntryCardProps {
   entry: Entry;
@@ -58,30 +58,30 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginVertical: spacing.sm,
   },
-  title: {
-    marginBottom: spacing.sm,
+  chip: {
+    height: 24,
   },
-  preview: {
-    marginBottom: spacing.sm,
-    color: '#666',
+  date: {
+    color: colors.text.tertiary,
   },
   metadata: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
   },
-  date: {
-    color: '#999',
-  },
-  wordCount: {
-    color: '#999',
+  preview: {
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
   },
-  chip: {
-    height: 24,
+  title: {
+    marginBottom: spacing.sm,
+  },
+  wordCount: {
+    color: colors.text.tertiary,
   },
 });

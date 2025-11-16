@@ -78,11 +78,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           actionLabel="Create Entry"
           onAction={handleCreatePress}
         />
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={handleCreatePress}
-        />
+        <FAB icon="plus" style={styles.fab} onPress={handleCreatePress} />
       </View>
     );
   }
@@ -98,22 +94,13 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         data={entries}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <EntryCard
-            entry={item}
-            onPress={() => handleEntryPress(item.id)}
-          />
+          <EntryCard entry={item} onPress={() => handleEntryPress(item.id)} />
         )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         contentContainerStyle={styles.list}
       />
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={handleCreatePress}
-      />
+      <FAB icon="plus" style={styles.fab} onPress={handleCreatePress} />
     </View>
   );
 };
@@ -122,12 +109,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  list: {
-    paddingBottom: spacing.xl,
-  },
   fab: {
+    bottom: spacing.md,
     position: 'absolute',
     right: spacing.md,
-    bottom: spacing.md,
+  },
+  list: {
+    paddingBottom: spacing.xl,
   },
 });

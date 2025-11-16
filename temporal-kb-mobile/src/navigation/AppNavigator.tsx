@@ -51,26 +51,14 @@ const MainTabs = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Recent' }}
-      />
-      <Tab.Screen
-        name="Search"
-        component={SearchScreen}
-        options={{ tabBarLabel: 'Search' }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Recent' }} />
+      <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: 'Search' }} />
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}
         options={{ tabBarLabel: 'Discover' }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile' }}
-      />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );
 };
@@ -91,11 +79,7 @@ export const AppNavigator = () => {
           },
         }}
       >
-        <Stack.Screen
-          name="Main"
-          component={MainTabs}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen
           name="EntryDetail"
           component={EntryDetailScreen}
@@ -111,11 +95,7 @@ export const AppNavigator = () => {
           component={EditEntryScreen}
           options={{ title: 'Edit Entry' }}
         />
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: 'Settings' }}
-        />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

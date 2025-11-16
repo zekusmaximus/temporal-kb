@@ -29,7 +29,13 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   const [entryType, setEntryType] = useState(entry.entry_type);
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
 
-  const { control, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormData>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<FormData>({
     defaultValues: {
       title: entry.title,
       content: entry.content,
@@ -49,7 +55,10 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleRemoveTag = (tag: string) => {
-    setValue('tags', tags.filter((t) => t !== tag));
+    setValue(
+      'tags',
+      tags.filter((t) => t !== tag)
+    );
   };
 
   const handleAddProject = () => {
@@ -60,7 +69,10 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleRemoveProject = (project: string) => {
-    setValue('projects', projects.filter((p) => p !== project));
+    setValue(
+      'projects',
+      projects.filter((p) => p !== project)
+    );
   };
 
   const onSubmit = async (data: FormData) => {
@@ -90,11 +102,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="Edit Entry" />
-        <Appbar.Action
-          icon="check"
-          onPress={handleSubmit(onSubmit)}
-          disabled={saving}
-        />
+        <Appbar.Action icon="check" onPress={handleSubmit(onSubmit)} disabled={saving} />
       </Appbar.Header>
 
       <ScrollView style={styles.content}>
@@ -169,11 +177,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
           />
           <View style={styles.chips}>
             {tags.map((tag) => (
-              <Chip
-                key={tag}
-                onClose={() => handleRemoveTag(tag)}
-                style={styles.chip}
-              >
+              <Chip key={tag} onClose={() => handleRemoveTag(tag)} style={styles.chip}>
                 {tag}
               </Chip>
             ))}
@@ -219,6 +223,14 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  chip: {
+    marginBottom: spacing.xs,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
   container: {
     flex: 1,
   },
@@ -226,28 +238,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  input: {
-    marginBottom: spacing.md,
-  },
   contentInput: {
     minHeight: 200,
   },
-  typeButton: {
+  input: {
     marginBottom: spacing.md,
   },
   section: {
     marginBottom: spacing.lg,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  chip: {
-    marginBottom: spacing.xs,
-  },
   submitButton: {
-    marginTop: spacing.md,
     marginBottom: spacing.xl,
+    marginTop: spacing.md,
+  },
+  typeButton: {
+    marginBottom: spacing.md,
   },
 });

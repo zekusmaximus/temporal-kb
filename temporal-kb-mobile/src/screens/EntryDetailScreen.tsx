@@ -9,7 +9,7 @@ import { RootStackParamList } from '../navigation/types';
 import { LoadingState } from '../components/LoadingState';
 import { apiClient } from '../api/client';
 import { Entry, RelatedEntry } from '../types';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EntryDetail'>;
 
@@ -80,12 +80,7 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
-          anchor={
-            <Appbar.Action
-              icon="dots-vertical"
-              onPress={() => setMenuVisible(true)}
-            />
-          }
+          anchor={<Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
         >
           <Menu.Item onPress={handleEdit} title="Edit" leadingIcon="pencil" />
           <Menu.Item onPress={handleDelete} title="Delete" leadingIcon="delete" />
@@ -160,6 +155,9 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  chip: {
+    height: 32,
+  },
   container: {
     flex: 1,
   },
@@ -167,16 +165,32 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
   },
-  title: {
-    marginBottom: spacing.sm,
+  divider: {
+    marginVertical: spacing.lg,
+  },
+  metaText: {
+    color: colors.text.secondary,
   },
   metadata: {
     flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.md,
   },
-  metaText: {
-    color: '#666',
+  projects: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  relatedButton: {
+    marginBottom: spacing.sm,
+  },
+  sectionLabel: {
+    marginRight: spacing.xs,
+  },
+  sectionTitle: {
+    marginBottom: spacing.md,
   },
   tags: {
     flexDirection: 'row',
@@ -184,26 +198,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginBottom: spacing.sm,
   },
-  projects: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  sectionLabel: {
-    marginRight: spacing.xs,
-  },
-  chip: {
-    height: 32,
-  },
-  divider: {
-    marginVertical: spacing.lg,
-  },
-  sectionTitle: {
-    marginBottom: spacing.md,
-  },
-  relatedButton: {
+  title: {
     marginBottom: spacing.sm,
   },
 });
@@ -215,13 +210,13 @@ const markdownStyles = {
   },
   heading1: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   heading2: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
@@ -229,12 +224,12 @@ const markdownStyles = {
     marginBottom: spacing.sm,
   },
   code_inline: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.code.background,
     padding: 2,
     borderRadius: 3,
   },
   code_block: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.code.background,
     padding: spacing.sm,
     borderRadius: spacing.xs,
     marginVertical: spacing.sm,

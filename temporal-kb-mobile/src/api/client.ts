@@ -7,6 +7,34 @@ const STORAGE_KEYS = {
   API_KEY: '@temporal_kb:api_key',
 };
 
+export interface HealthCheckResponse {
+  status: 'healthy' | 'degraded';
+  version?: string;
+  timestamp?: string;
+}
+
+export interface Tag {
+  name: string;
+  count: number;
+}
+
+export interface Project {
+  name: string;
+  entry_count: number;
+}
+
+export interface Stats {
+  total_entries: number;
+  total_words: number;
+  tags_count: number;
+  projects_count: number;
+}
+
+export interface ApiConfig {
+  baseUrl: string;
+  apiKey: string;
+}
+
 class TemporalKBClient {
   private client: AxiosInstance;
   private baseUrl: string = '';
@@ -44,7 +72,7 @@ class TemporalKBClient {
     );
   }
 
-  async initialize() {
+  async initialize(): Promise<void> {
     const [url, key] = await Promise.all([
       AsyncStorage.getItem(STORAGE_KEYS.API_URL),
       AsyncStorage.getItem(STORAGE_KEYS.API_KEY),
@@ -56,7 +84,7 @@ class TemporalKBClient {
     this.client.defaults.baseURL = this.baseUrl;
   }
 
-  async setConfig(baseUrl: string, apiKey: string) {
+  async setConfig(baseUrl: string, apiKey: string): Promise<void> {
     this.baseUrl = baseUrl;
     this.apiKey = apiKey;
     this.client.defaults.baseURL = baseUrl;
@@ -67,7 +95,7 @@ class TemporalKBClient {
     ]);
   }
 
-  async getConfig() {
+  async getConfig(): Promise<ApiConfig> {
     return {
       baseUrl: this.baseUrl,
       apiKey: this.apiKey,
@@ -75,8 +103,8 @@ class TemporalKBClient {
   }
 
   // Health check
-  async healthCheck() {
-    const response = await this.client.get('/health');
+  async healthCheck(): Promise<HealthCheckResponse> {
+    const response = await this.client.get<HealthCheckResponse>('/health');
     return response.data;
   }
 
@@ -142,20 +170,20 @@ class TemporalKBClient {
   }
 
   // Tags
-  async getTags() {
-    const response = await this.client.get('/api/v1/tags');
+  async getTags(): Promise<Tag[]> {
+    const response = await this.client.get<Tag[]>('/api/v1/tags');
     return response.data;
   }
 
   // Projects
-  async getProjects() {
-    const response = await this.client.get('/api/v1/projects');
+  async getProjects(): Promise<Project[]> {
+    const response = await this.client.get<Project[]>('/api/v1/projects');
     return response.data;
   }
 
   // Stats
-  async getStats() {
-    const response = await this.client.get('/api/v1/stats/overview');
+  async getStats(): Promise<Stats> {
+    const response = await this.client.get<Stats>('/api/v1/stats/overview');
     return response.data;
   }
 }

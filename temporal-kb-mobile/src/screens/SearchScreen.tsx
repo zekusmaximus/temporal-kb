@@ -52,7 +52,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('EntryDetail', { entryId });
   };
 
-  const displayResults = searchMode === 'keyword' ? results : semanticResults.map(r => r.entry);
+  const displayResults = searchMode === 'keyword' ? results : semanticResults.map((r) => r.entry);
 
   return (
     <View style={styles.container}>
@@ -64,7 +64,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
 
       <SegmentedButtons
         value={searchMode}
-        onValueChange={(value) => setSearchMode(value as 'keyword' | 'semantic')}
+        onValueChange={(value) => setSearchMode(value)}
         buttons={[
           { value: 'keyword', label: 'Keyword' },
           { value: 'semantic', label: 'Semantic' },
@@ -90,10 +90,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
             <View>
-              <EntryCard
-                entry={item}
-                onPress={() => handleEntryPress(item.id)}
-              />
+              <EntryCard entry={item} onPress={() => handleEntryPress(item.id)} />
               {searchMode === 'semantic' && semanticResults[index] && (
                 <Text variant="labelSmall" style={styles.score}>
                   Similarity: {(semanticResults[index].similarity_score * 100).toFixed(1)}%
@@ -112,17 +109,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  segmented: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-  },
   list: {
     paddingBottom: spacing.xl,
   },
   score: {
+    color: '#666',
+    marginBottom: spacing.sm,
     marginHorizontal: spacing.md,
     marginTop: -spacing.sm,
-    marginBottom: spacing.sm,
-    color: '#666',
+  },
+  segmented: {
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.md,
   },
 });
