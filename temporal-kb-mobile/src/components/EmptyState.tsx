@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 interface EmptyStateProps {
   title: string;
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   message: {
-    color: '#666',
+    color: colors.text.secondary,
     marginBottom: spacing.lg,
     textAlign: 'center',
   },

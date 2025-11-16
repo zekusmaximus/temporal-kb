@@ -26,7 +26,7 @@ module.exports = {
   plugins: ['@typescript-eslint', 'react', 'react-hooks', 'react-native'],
   rules: {
     '@typescript-eslint/explicit-function-return-type': [
-      'warn',
+      'error',
       {
         allowExpressions: true,
         allowTypedFunctionExpressions: true,

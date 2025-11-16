@@ -4,12 +4,22 @@ import { useStore } from '../store';
 import { Entry, EntryCreate, SearchParams } from '../types';
 import { getErrorMessage } from '@/utils/errors';
 
-export const useEntries = () => {
+interface UseEntriesReturn {
+  loadEntries: (params?: SearchParams) => Promise<Entry[]>;
+  loadRecent: (limit?: number) => Promise<Entry[]>;
+  searchEntries: (query: string, params?: Omit<SearchParams, 'q'>) => Promise<Entry[]>;
+  createEntry: (data: EntryCreate) => Promise<Entry>;
+  updateEntry: (id: string, data: Partial<EntryCreate>) => Promise<Entry>;
+  deleteEntry: (id: string) => Promise<void>;
+  error: string | null;
+}
+
+export const useEntries = (): UseEntriesReturn => {
   const { setEntries, addEntry, updateEntry, removeEntry, setIsLoading } = useStore();
   const [error, setError] = useState<string | null>(null);
 
   const loadEntries = useCallback(
-    async (params?: SearchParams) => {
+    async (params?: SearchParams): Promise<Entry[]> => {
       try {
         setIsLoading(true);
         setError(null);
@@ -28,7 +38,7 @@ export const useEntries = () => {
   );
 
   const loadRecent = useCallback(
-    async (limit: number = 20) => {
+    async (limit: number = 20): Promise<Entry[]> => {
       try {
         setIsLoading(true);
         setError(null);
@@ -47,7 +57,7 @@ export const useEntries = () => {
   );
 
   const searchEntries = useCallback(
-    async (query: string, params?: Omit<SearchParams, 'q'>) => {
+    async (query: string, params?: Omit<SearchParams, 'q'>): Promise<Entry[]> => {
       try {
         setIsLoading(true);
         setError(null);
@@ -66,7 +76,7 @@ export const useEntries = () => {
   );
 
   const createEntry = useCallback(
-    async (data: EntryCreate) => {
+    async (data: EntryCreate): Promise<Entry> => {
       try {
         setIsLoading(true);
         setError(null);
@@ -85,7 +95,7 @@ export const useEntries = () => {
   );
 
   const updateEntryById = useCallback(
-    async (id: string, data: Partial<EntryCreate>) => {
+    async (id: string, data: Partial<EntryCreate>): Promise<Entry> => {
       try {
         setIsLoading(true);
         setError(null);
@@ -104,7 +114,7 @@ export const useEntries = () => {
   );
 
   const deleteEntry = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<void> => {
       try {
         setIsLoading(true);
         setError(null);

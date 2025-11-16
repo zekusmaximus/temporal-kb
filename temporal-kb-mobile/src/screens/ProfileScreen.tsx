@@ -22,10 +22,10 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    loadProfileData();
+    void loadProfileData();
   }, []);
 
-  const loadProfileData = async () => {
+  const loadProfileData = async (): Promise<void> => {
     try {
       setLoading(true);
       const [statsData, tagsData, projectsData] = await Promise.all([
@@ -43,7 +43,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSettingsPress = () => {
+  const handleSettingsPress = (): void => {
     navigation.navigate('Settings');
   };
 

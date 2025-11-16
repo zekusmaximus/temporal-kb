@@ -9,15 +9,15 @@ import { lightTheme, darkTheme } from './src/theme';
 import { apiClient } from './src/api/client';
 import { LoadingState } from './src/components/LoadingState';
 
-export default function App() {
+export default function App(): React.JSX.Element {
   const { isDarkMode } = useStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    initializeApp();
+    void initializeApp();
   }, []);
 
-  const initializeApp = async () => {
+  const initializeApp = async (): Promise<void> => {
     try {
       // Initialize API client with stored configuration
       await apiClient.initialize();

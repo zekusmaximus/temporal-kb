@@ -13,7 +13,7 @@ import { EmptyState } from '../components/EmptyState';
 import { apiClient } from '../api/client';
 import { useStore } from '../store';
 import { Entry, SemanticSearchResult } from '../types';
-import { spacing } from '../theme';
+import { spacing, colors } from '../theme';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Search'>,
@@ -27,7 +27,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
   const [semanticResults, setSemanticResults] = useState<SemanticSearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string): Promise<void> => {
     try {
       setIsLoading(true);
       setHasSearched(true);
@@ -48,7 +48,7 @@ export const SearchScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleEntryPress = (entryId: string) => {
+  const handleEntryPress = (entryId: string): void => {
     navigation.navigate('EntryDetail', { entryId });
   };
 
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   score: {
-    color: '#666',
+    color: colors.text.secondary,
     marginBottom: spacing.sm,
     marginHorizontal: spacing.md,
     marginTop: -spacing.sm,

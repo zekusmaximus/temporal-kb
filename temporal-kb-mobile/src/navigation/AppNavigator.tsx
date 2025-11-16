@@ -18,7 +18,7 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const MainTabs = () => {
+const MainTabs = (): React.JSX.Element => {
   const theme = useTheme();
 
   return (
@@ -63,7 +63,7 @@ const MainTabs = () => {
   );
 };
 
-export const AppNavigator = () => {
+export const AppNavigator = (): React.JSX.Element => {
   const theme = useTheme();
 
   return (

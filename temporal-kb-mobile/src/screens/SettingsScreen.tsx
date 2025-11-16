@@ -22,13 +22,13 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     loadConfig();
   }, []);
 
-  const loadConfig = async () => {
-    const config = await apiClient.getConfig();
+  const loadConfig = (): void => {
+    const config = apiClient.getConfig();
     setApiUrl(config.baseUrl);
     setApiKey(config.apiKey);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!apiUrl.trim()) {
       Alert.alert('Error', 'API URL is required');
       return;
@@ -51,7 +51,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleTestConnection = async () => {
+  const handleTestConnection = async (): Promise<void> => {
     if (!apiUrl.trim() || !apiKey.trim()) {
       Alert.alert('Error', 'Please configure API URL and API Key first');
       return;
@@ -110,7 +110,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
             <Button
               mode="contained"
-              onPress={handleSave}
+              onPress={() => void handleSave()}
               loading={saving}
               disabled={saving || testing}
               style={styles.button}
@@ -120,7 +120,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
             <Button
               mode="outlined"
-              onPress={handleTestConnection}
+              onPress={() => void handleTestConnection()}
               loading={testing}
               disabled={saving || testing}
               style={styles.button}

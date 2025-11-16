@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Text, Chip, Divider, Button, Menu, Appbar } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,12 +20,7 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  useEffect(() => {
-    loadEntry();
-    loadRelated();
-  }, [entryId]);
-
-  const loadEntry = async () => {
+  const loadEntry = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       const data = await apiClient.getEntry(entryId);
@@ -35,25 +30,30 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [entryId]);
 
-  const loadRelated = async () => {
+  const loadRelated = useCallback(async (): Promise<void> => {
     try {
       const data = await apiClient.getRelatedEntries(entryId, 5);
       setRelatedEntries(data);
     } catch (error) {
       console.error('Failed to load related entries:', error);
     }
-  };
+  }, [entryId]);
 
-  const handleEdit = () => {
+  useEffect(() => {
+    void loadEntry();
+    void loadRelated();
+  }, [loadEntry, loadRelated]);
+
+  const handleEdit = (): void => {
     if (entry) {
       setMenuVisible(false);
       navigation.navigate('EditEntry', { entry });
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (entry) {
       try {
         await apiClient.deleteEntry(entry.id);
@@ -64,7 +64,7 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
-  const handleRelatedPress = (id: string) => {
+  const handleRelatedPress = (id: string): void => {
     navigation.push('EntryDetail', { entryId: id });
   };
 
@@ -83,7 +83,7 @@ export const EntryDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           anchor={<Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
         >
           <Menu.Item onPress={handleEdit} title="Edit" leadingIcon="pencil" />
-          <Menu.Item onPress={handleDelete} title="Delete" leadingIcon="delete" />
+          <Menu.Item onPress={() => void handleDelete()} title="Delete" leadingIcon="delete" />
         </Menu>
       </Appbar.Header>
 

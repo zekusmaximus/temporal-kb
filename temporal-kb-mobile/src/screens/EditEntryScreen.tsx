@@ -47,35 +47,35 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
   const tags = watch('tags');
   const projects = watch('projects');
 
-  const handleAddTag = () => {
+  const handleAddTag = (): void => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setValue('tags', [...tags, tagInput.trim()]);
       setTagInput('');
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
+  const handleRemoveTag = (tag: string): void => {
     setValue(
       'tags',
       tags.filter((t) => t !== tag)
     );
   };
 
-  const handleAddProject = () => {
+  const handleAddProject = (): void => {
     if (projectInput.trim() && !projects.includes(projectInput.trim())) {
       setValue('projects', [...projects, projectInput.trim()]);
       setProjectInput('');
     }
   };
 
-  const handleRemoveProject = (project: string) => {
+  const handleRemoveProject = (project: string): void => {
     setValue(
       'projects',
       projects.filter((p) => p !== project)
     );
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormData): Promise<void> => {
     try {
       setSaving(true);
       const entryData: Partial<EntryCreate> = {
@@ -102,7 +102,11 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="Edit Entry" />
-        <Appbar.Action icon="check" onPress={handleSubmit(onSubmit)} disabled={saving} />
+        <Appbar.Action
+          icon="check"
+          onPress={() => void handleSubmit(onSubmit)()}
+          disabled={saving}
+        />
       </Appbar.Header>
 
       <ScrollView style={styles.content}>
@@ -210,7 +214,7 @@ export const EditEntryScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <Button
           mode="contained"
-          onPress={handleSubmit(onSubmit)}
+          onPress={() => void handleSubmit(onSubmit)()}
           loading={saving}
           disabled={saving}
           style={styles.submitButton}
