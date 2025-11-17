@@ -37,5 +37,5 @@ async def overview_stats(
         "total_projects": total_projects,
         "total_links": total_links,
         "avg_words_per_entry": total_words / total_entries if total_entries > 0 else 0,
-        "entry_type_distribution": dict(type_dist),
+        "entry_type_distribution": {str(row[0]): int(row[1]) for row in type_dist},
     }

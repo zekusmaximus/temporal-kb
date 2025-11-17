@@ -3,7 +3,7 @@
 import logging
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, cast, Tuple
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
@@ -196,13 +196,13 @@ class LinkService:
                     )
 
         # Filter by minimum strength
-        detected_links = [link for link in detected_links if link["strength"] >= min_strength]
+        detected_links = [link for link in detected_links if cast(float, link["strength"]) >= min_strength]
 
         # Remove duplicates (keep highest strength)
-        unique_links = {}
+        unique_links: Dict[str, Dict[str, Any]] = {}
         for link in detected_links:
-            key = link["to_entry_id"]
-            if key not in unique_links or link["strength"] > unique_links[key]["strength"]:
+            key = str(link["to_entry_id"])
+            if key not in unique_links or cast(float, link["strength"]) > cast(float, unique_links[key]["strength"]):
                 unique_links[key] = link
 
         return list(unique_links.values())
@@ -268,7 +268,7 @@ class LinkService:
         Returns:
             List of (Entry, relevance_score) tuples
         """
-        related_scores = defaultdict(float)
+        related_scores: Dict[str, float] = defaultdict(float)
 
         # Direct outgoing links
         for link in entry.outgoing_links:
@@ -346,7 +346,7 @@ class LinkService:
                 {"id": e.id, "title": e.title, "link_count": count}
                 for e, _, count in most_connected
             ],
-            "link_types": dict(link_types),
+            "link_types": {str(row[0]): int(row[1]) for row in link_types},
         }
 
     def find_clusters(self, min_cluster_size: int = 3) -> List[List[str]]:
@@ -381,7 +381,7 @@ class LinkService:
 
         for entry_id in adjacency.keys():
             if entry_id not in visited:
-                cluster = set()
+                cluster: Set[str] = set()
                 dfs(entry_id, cluster)
                 if len(cluster) >= min_cluster_size:
                     clusters.append(list(cluster))

@@ -13,7 +13,7 @@ from ..core.models import Entry
 class FileManager:
     def __init__(self, entries_dir: Optional[Path] = None):
         config = get_config()
-        self.entries_dir = entries_dir or config.entries_dir
+        self.entries_dir: Path = entries_dir or config.entries_dir or Path.home() / ".temporal-kb" / "data" / "entries"
         self.entries_dir.mkdir(parents=True, exist_ok=True)
 
     def save_entry(self, entry: Entry) -> Path:

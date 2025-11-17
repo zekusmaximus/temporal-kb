@@ -183,14 +183,14 @@ def prompt_for_editor(initial_content: str = "") -> str:
 
 def confirm_action(message: str, default: bool = False) -> bool:
     """Prompt user for confirmation"""
-    return Confirm.ask(message, default=default)
+    return bool(Confirm.ask(message, default=default))
 
 
 def prompt_text(message: str, default: str = "") -> str:
     """Prompt user for text input"""
-    return Prompt.ask(message, default=default)
+    return str(Prompt.ask(message, default=default))
 
 
 def prompt_choice(message: str, choices: List[str]) -> str:
     """Prompt user to choose from options"""
-    return Prompt.ask(message, choices=choices)
+    return str(Prompt.ask(message, choices=choices))

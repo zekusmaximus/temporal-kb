@@ -86,9 +86,9 @@ class TemporalService:
 
         # Analyze entry types
         def analyze_period(entries: List[Entry]) -> Dict[str, Any]:
-            types = defaultdict(int)
-            tags = defaultdict(int)
-            projects = defaultdict(int)
+            types: Dict[str, int] = defaultdict(int)
+            tags: Dict[str, int] = defaultdict(int)
+            projects: Dict[str, int] = defaultdict(int)
             word_count = 0
 
             for entry in entries:
@@ -208,7 +208,7 @@ class TemporalService:
 
         entries = self.get_entries_in_range(start_date, end_date)
 
-        heatmap = defaultdict(int)
+        heatmap: Dict[str, int] = defaultdict(int)
         for entry in entries:
             date_key = entry.created_at.strftime("%Y-%m-%d")
             heatmap[date_key] += 1
@@ -225,32 +225,32 @@ class TemporalService:
         all_entries = self.session.query(Entry).all()
 
         # Day of week analysis
-        weekday_counts = defaultdict(int)
+        weekday_counts: Dict[str, int] = defaultdict(int)
         for entry in all_entries:
             weekday = entry.created_at.strftime("%A")
             weekday_counts[weekday] += 1
 
         # Hour of day analysis
-        hour_counts = defaultdict(int)
+        hour_counts: Dict[int, int] = defaultdict(int)
         for entry in all_entries:
             hour = entry.created_at.hour
             hour_counts[hour] += 1
 
         # Month analysis
-        month_counts = defaultdict(int)
+        month_counts: Dict[str, int] = defaultdict(int)
         for entry in all_entries:
             month = entry.created_at.strftime("%B")
             month_counts[month] += 1
 
         # Seasonal analysis
-        season_counts = defaultdict(int)
+        season_counts: Dict[str, int] = defaultdict(int)
         for entry in all_entries:
-            month = entry.created_at.month
-            if month in [12, 1, 2]:
+            month_num = entry.created_at.month
+            if month_num in [12, 1, 2]:
                 season = "Winter"
-            elif month in [3, 4, 5]:
+            elif month_num in [3, 4, 5]:
                 season = "Spring"
-            elif month in [6, 7, 8]:
+            elif month_num in [6, 7, 8]:
                 season = "Summer"
             else:
                 season = "Fall"

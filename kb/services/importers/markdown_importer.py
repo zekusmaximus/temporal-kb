@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, cast
 
 from ...core.schemas import EntryType
 from ...utils.text_processing import extract_yaml_frontmatter
@@ -16,27 +16,30 @@ logger = logging.getLogger(__name__)
 class MarkdownImporter(ImporterBase):
     """Import markdown files from directories"""
 
-    def import_data(
-        self, source: Path, recursive: bool = True, tags: List[str] = None, project: str = None
-    ) -> Dict[str, Any]:
+    def import_data(self, source: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Import markdown files from a directory
 
         Args:
             source: Directory path
-            recursive: Scan subdirectories
-            tags: Tags to add to all imported entries
-            project: Project to associate with imports
+            **kwargs:
+                recursive (bool): Scan subdirectories (default: True)
+                tags (List[str]): Tags to add to all imported entries
+                project (str): Project to associate with imports
 
         Returns:
             Import statistics
         """
+        # Extract parameters from kwargs
+        recursive = bool(kwargs.get("recursive", True))
+        tags = cast(Optional[List[str]], kwargs.get("tags"))
+        project = cast(Optional[str], kwargs.get("project"))
 
         source_path = Path(source)
         if not source_path.exists():
             raise ValueError(f"Source path does not exist: {source}")
 
-        stats = {"files_found": 0, "files_imported": 0, "files_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {"files_found": 0, "files_imported": 0, "files_skipped": 0, "errors": []}
 
         # Find markdown files
         pattern = "**/*.md" if recursive else "*.md"

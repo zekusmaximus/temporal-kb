@@ -214,17 +214,17 @@ vectors/
 
         try:
             if commit_sha:
-                commit = self.repo.commit(commit_sha)
+                # Use git.diff() which returns a string directly
                 if file_path:
-                    return commit.diff(commit.parents[0], paths=file_path, create_patch=True)
+                    return str(self.repo.git.diff(f"{commit_sha}^", commit_sha, "--", file_path))
                 else:
-                    return commit.diff(commit.parents[0], create_patch=True)
+                    return str(self.repo.git.diff(f"{commit_sha}^", commit_sha))
             else:
                 # Show working directory changes
                 if file_path:
-                    return self.repo.git.diff(file_path)
+                    return str(self.repo.git.diff(file_path))
                 else:
-                    return self.repo.git.diff()
+                    return str(self.repo.git.diff())
 
         except Exception as e:
             logger.error(f"Failed to get diff: {e}")
