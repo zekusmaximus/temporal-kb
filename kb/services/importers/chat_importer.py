@@ -31,7 +31,6 @@ class ChatExportImporter(ImporterBase):
         """
         # Extract parameters from kwargs
         chat_format = cast(str, kwargs.get("chat_format", "auto"))
-        combine_conversations = bool(kwargs.get("combine_conversations", False))
         tags = cast(Optional[List[str]], kwargs.get("tags"))
 
         stats: Dict[str, Any] = {

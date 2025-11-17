@@ -3,7 +3,7 @@
 import logging
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, cast, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
