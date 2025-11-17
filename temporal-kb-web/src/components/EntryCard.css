@@ -1,0 +1,36 @@
+.entry-card {
+  border-bottom: 1px solid var(--border-color);
+  padding: 1em 0;
+  margin: 1em 0;
+}
+
+.entry-card:last-child {
+  border-bottom: none;
+}
+
+.entry-title {
+  font-size: 1.3em;
+  margin: 0 0 0.3em 0;
+  border: none;
+  padding: 0;
+}
+
+.entry-title a {
+  color: var(--link-color);
+}
+
+.entry-meta {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-bottom: 0.5em;
+}
+
+.entry-meta .separator {
+  margin: 0 0.5em;
+}
+
+.entry-excerpt {
+  color: var(--text-secondary);
+  margin-top: 0.5em;
+  line-height: 1.5;
+}
