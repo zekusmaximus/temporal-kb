@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import chromadb
 from chromadb.config import Settings
@@ -11,6 +11,9 @@ from sentence_transformers import SentenceTransformer
 from ..core.models import Entry
 
 logger = logging.getLogger(__name__)
+
+# Type alias for metadata values accepted by ChromaDB
+Metadata = Mapping[str, str | int | float | bool | None]
 
 
 class VectorStore:
@@ -67,10 +70,10 @@ class VectorStore:
             text = self._prepare_text(entry)
 
             # Generate embedding
-            embedding = self.model.encode(text).tolist()
+            embedding: list[float] = self.model.encode(text).tolist()
 
             # Prepare metadata
-            metadata = {
+            metadata: dict[str, str | int | float | bool | None] = {
                 "entry_id": entry.id,
                 "title": entry.title,
                 "entry_type": entry.entry_type,
@@ -115,9 +118,9 @@ class VectorStore:
                 # Prepare batch data
                 ids = [entry.id for entry in batch]
                 texts = [self._prepare_text(entry) for entry in batch]
-                embeddings = self.model.encode(texts).tolist()
+                embeddings: list[list[float]] = self.model.encode(texts).tolist()
 
-                metadatas = []
+                metadatas: list[dict[str, str | int | float | bool | None]] = []
                 for entry in batch:
                     metadatas.append(
                         {
@@ -167,25 +170,37 @@ class VectorStore:
         """
         try:
             # Generate query embedding
-            query_embedding = self.model.encode(query).tolist()
+            query_embedding: list[float] = self.model.encode(query).tolist()
 
             # Search
             results = self.collection.query(
                 query_embeddings=[query_embedding], n_results=limit, where=where
             )
 
-            # Format results
+            # Format results - guard against None
+            ids_list = results.get("ids")
+            distances_list = results.get("distances")
+            metadatas_list = results.get("metadatas")
+            documents_list = results.get("documents")
+
+            if not ids_list or not distances_list or not metadatas_list or not documents_list:
+                return []
+
             formatted_results = []
-            if results["ids"] and results["ids"][0]:
-                for i, entry_id in enumerate(results["ids"][0]):
+            if ids_list[0]:
+                ids = ids_list[0]
+                distances = distances_list[0]
+                metadatas = metadatas_list[0]
+                documents = documents_list[0]
+
+                for i, entry_id in enumerate(ids):
                     formatted_results.append(
                         {
                             "id": entry_id,
-                            "distance": results["distances"][0][i],
-                            "similarity": 1
-                            - results["distances"][0][i],  # Convert distance to similarity
-                            "metadata": results["metadatas"][0][i],
-                            "document": results["documents"][0][i],
+                            "distance": distances[i],
+                            "similarity": 1 - distances[i],  # Convert distance to similarity
+                            "metadata": metadatas[i],
+                            "document": documents[i],
                         }
                     )
 
@@ -213,11 +228,13 @@ class VectorStore:
             # Get the entry's embedding
             result = self.collection.get(ids=[entry_id], include=["embeddings"])
 
-            if not result["embeddings"]:
+            embeddings = result.get("embeddings")
+            if not embeddings or not embeddings[0]:
                 logger.warning(f"Entry {entry_id} not found in vector store")
                 return []
 
-            embedding = result["embeddings"][0]
+            # Normalize embedding to list[float]
+            embedding: list[float] = list(embeddings[0])
 
             # Search for similar entries
             results = self.collection.query(
@@ -226,18 +243,31 @@ class VectorStore:
                 where=where,
             )
 
-            # Format and filter out the original entry
+            # Format and filter out the original entry - guard against None
+            ids_list = results.get("ids")
+            distances_list = results.get("distances")
+            metadatas_list = results.get("metadatas")
+            documents_list = results.get("documents")
+
+            if not ids_list or not distances_list or not metadatas_list or not documents_list:
+                return []
+
             formatted_results = []
-            if results["ids"] and results["ids"][0]:
-                for i, result_id in enumerate(results["ids"][0]):
+            if ids_list[0]:
+                result_ids = ids_list[0]
+                distances = distances_list[0]
+                metadatas = metadatas_list[0]
+                documents = documents_list[0]
+
+                for i, result_id in enumerate(result_ids):
                     if result_id != entry_id:  # Exclude the query entry itself
                         formatted_results.append(
                             {
                                 "id": result_id,
-                                "distance": results["distances"][0][i],
-                                "similarity": 1 - results["distances"][0][i],
-                                "metadata": results["metadatas"][0][i],
-                                "document": results["documents"][0][i],
+                                "distance": distances[i],
+                                "similarity": 1 - distances[i],
+                                "metadata": metadatas[i],
+                                "document": documents[i],
                             }
                         )
 

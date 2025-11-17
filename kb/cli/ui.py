@@ -61,7 +61,7 @@ def print_entry(entry, show_content: bool = True, show_metadata: bool = True):
             pass
 
     # Content
-    content = ""
+    content: str | Markdown = ""
     if show_content:
         # Render markdown
         md = Markdown(entry.content)
