@@ -49,12 +49,19 @@ class EntryUpdate(BaseModel):
     is_public: Optional[bool] = None
 
 
-class EntryResponse(EntryBase):
+class EntryResponse(BaseModel):
     id: str
     created_at: datetime
     updated_at: datetime
-    word_count: int
-    file_path: Optional[str]
+    entry_type: str  # Stored as string in DB, can be any value
+    title: str
+    content: str
+    source: Optional[str] = None
+    source_metadata: Optional[str] = None  # Stored as JSON string in DB
+    word_count: Optional[int] = None  # Nullable in DB
+    file_path: Optional[str] = None
+    vault_id: Optional[str] = None
+    is_public: bool = False
     tags: List[str] = []
     projects: List[str] = []
     version_count: int = 0
@@ -67,8 +74,8 @@ class EntryVersionResponse(BaseModel):
     id: str
     version_number: int
     changed_at: datetime
-    change_type: str
-    change_summary: Optional[str]
+    change_type: Optional[str] = None  # Nullable in DB
+    change_summary: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -87,7 +94,7 @@ class LinkResponse(BaseModel):
     to_entry_id: str
     link_type: str
     strength: float
-    created_at: datetime
+    created_at: Optional[datetime] = None  # Nullable in DB
 
     class Config:
         from_attributes = True
