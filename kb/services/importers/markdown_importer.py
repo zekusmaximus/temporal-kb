@@ -39,7 +39,12 @@ class MarkdownImporter(ImporterBase):
         if not source_path.exists():
             raise ValueError(f"Source path does not exist: {source}")
 
-        stats: Dict[str, Any] = {"files_found": 0, "files_imported": 0, "files_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {
+            "files_found": 0,
+            "files_imported": 0,
+            "files_skipped": 0,
+            "errors": [],
+        }
 
         # Find markdown files
         pattern = "**/*.md" if recursive else "*.md"

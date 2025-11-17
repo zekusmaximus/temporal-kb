@@ -54,7 +54,9 @@ class Entry(Base):
     versions: Mapped[list["EntryVersion"]] = relationship(
         "EntryVersion", back_populates="entry", cascade="all, delete-orphan"
     )
-    tags: Mapped[list["Tag"]] = relationship("Tag", secondary="entry_tags", back_populates="entries")
+    tags: Mapped[list["Tag"]] = relationship(
+        "Tag", secondary="entry_tags", back_populates="entries"
+    )
     projects: Mapped[list["Project"]] = relationship(
         "Project", secondary="entry_projects", back_populates="entries"
     )
@@ -102,7 +104,9 @@ class Tag(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: generate_id("tag"))
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    category: Mapped[Optional[str]] = mapped_column(String)  # 'domain', 'project', 'theme', 'status'
+    category: Mapped[Optional[str]] = mapped_column(
+        String
+    )  # 'domain', 'project', 'theme', 'status'
     color: Mapped[Optional[str]] = mapped_column(String)
     parent_tag_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("tags.id"))
     created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=func.now())
@@ -111,7 +115,9 @@ class Tag(Base):
         "Entry", secondary="entry_tags", back_populates="tags"
     )
     children: Mapped[list["Tag"]] = relationship("Tag", back_populates="parent", remote_side=[id])
-    parent: Mapped[Optional["Tag"]] = relationship("Tag", back_populates="children", remote_side=[parent_tag_id])
+    parent: Mapped[Optional["Tag"]] = relationship(
+        "Tag", back_populates="children", remote_side=[parent_tag_id]
+    )
 
 
 class EntryTag(Base):
@@ -222,7 +228,9 @@ class QueryHistory(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: generate_id("qry"))
     query_text: Mapped[str] = mapped_column(Text, nullable=False)
     query_type: Mapped[Optional[str]] = mapped_column(String)
-    executed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=func.now(), index=True)
+    executed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default=func.now(), index=True
+    )
     results_count: Mapped[Optional[int]] = mapped_column(Integer)
     execution_time_ms: Mapped[Optional[int]] = mapped_column(Integer)
     result_entry_ids: Mapped[Optional[str]] = mapped_column(Text)  # JSON

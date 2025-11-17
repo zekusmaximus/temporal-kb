@@ -45,7 +45,12 @@ class EmailImporter(ImporterBase):
         sender_filter = cast(Optional[str], kwargs.get("sender_filter"))
         limit = int(kwargs.get("limit", 100))
 
-        stats: Dict[str, Any] = {"emails_found": 0, "emails_imported": 0, "emails_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {
+            "emails_found": 0,
+            "emails_imported": 0,
+            "emails_skipped": 0,
+            "errors": [],
+        }
 
         try:
             # Connect to IMAP server

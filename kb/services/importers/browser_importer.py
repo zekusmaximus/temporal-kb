@@ -52,7 +52,12 @@ class BrowserHistoryImporter(ImporterBase):
         url_filter = cast(Optional[str], kwargs.get("url_filter"))
         limit = int(kwargs.get("limit", 500))
 
-        stats: Dict[str, Any] = {"visits_found": 0, "visits_imported": 0, "visits_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {
+            "visits_found": 0,
+            "visits_imported": 0,
+            "visits_skipped": 0,
+            "errors": [],
+        }
 
         try:
             # Get browser database path

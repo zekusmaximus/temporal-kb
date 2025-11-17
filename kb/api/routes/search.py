@@ -99,6 +99,7 @@ async def semantic_search(
 
     if not config.vector_db_path:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=500, detail="Vector database path not configured")
 
     vector_store = VectorStore(config.vector_db_path)

@@ -196,13 +196,17 @@ class LinkService:
                     )
 
         # Filter by minimum strength
-        detected_links = [link for link in detected_links if cast(float, link["strength"]) >= min_strength]
+        detected_links = [
+            link for link in detected_links if cast(float, link["strength"]) >= min_strength
+        ]
 
         # Remove duplicates (keep highest strength)
         unique_links: Dict[str, Dict[str, Any]] = {}
         for link in detected_links:
             key = str(link["to_entry_id"])
-            if key not in unique_links or cast(float, link["strength"]) > cast(float, unique_links[key]["strength"]):
+            if key not in unique_links or cast(float, link["strength"]) > cast(
+                float, unique_links[key]["strength"]
+            ):
                 unique_links[key] = link
 
         return list(unique_links.values())

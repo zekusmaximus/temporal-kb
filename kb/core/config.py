@@ -53,10 +53,7 @@ class Config(BaseSettings):
 
     # Note: postgres_url and api_keys already defined above
 
-    model_config = SettingsConfigDict(
-        env_prefix="KB_",
-        env_file=".env"
-    )
+    model_config = SettingsConfigDict(env_prefix="KB_", env_file=".env")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
