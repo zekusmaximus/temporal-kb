@@ -5,7 +5,7 @@ import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, Optional, cast
 
 from ...core.schemas import EntryType
 from .base import ImporterBase
@@ -50,7 +50,6 @@ class BrowserHistoryImporter(ImporterBase):
         browser = cast(str, kwargs.get("browser", "chrome"))
         since_date = cast(Optional[datetime], kwargs.get("since_date"))
         url_filter = cast(Optional[str], kwargs.get("url_filter"))
-        min_visit_duration = int(kwargs.get("min_visit_duration", 30))
         limit = int(kwargs.get("limit", 500))
 
         stats: Dict[str, Any] = {"visits_found": 0, "visits_imported": 0, "visits_skipped": 0, "errors": []}
