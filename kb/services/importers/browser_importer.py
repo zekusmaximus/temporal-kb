@@ -5,7 +5,7 @@ import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ...core.schemas import EntryType
 from .base import ImporterBase
@@ -30,31 +30,30 @@ class BrowserHistoryImporter(ImporterBase):
         "safari": {"darwin": Path.home() / "Library/Safari/History.db"},
     }
 
-    def import_data(
-        self,
-        source: str,
-        browser: str = "chrome",
-        since_date: Optional[datetime] = None,
-        url_filter: Optional[str] = None,
-        min_visit_duration: int = 30,  # seconds
-        limit: int = 500,
-    ) -> Dict[str, Any]:
+    def import_data(self, source: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Import browser history
 
         Args:
             source: Browser database path (or 'auto' for auto-detection)
-            browser: Browser type ('chrome', 'firefox', 'safari')
-            since_date: Only import visits after this date
-            url_filter: SQL LIKE pattern for URLs
-            min_visit_duration: Minimum time on page (seconds)
-            limit: Maximum entries to import
+            **kwargs:
+                browser (str): Browser type - 'chrome', 'firefox', 'safari' (default: "chrome")
+                since_date (datetime): Only import visits after this date
+                url_filter (str): SQL LIKE pattern for URLs
+                min_visit_duration (int): Minimum time on page in seconds (default: 30)
+                limit (int): Maximum entries to import (default: 500)
 
         Returns:
             Import statistics
         """
+        # Extract parameters from kwargs
+        browser = cast(str, kwargs.get("browser", "chrome"))
+        since_date = cast(Optional[datetime], kwargs.get("since_date"))
+        url_filter = cast(Optional[str], kwargs.get("url_filter"))
+        min_visit_duration = int(kwargs.get("min_visit_duration", 30))
+        limit = int(kwargs.get("limit", 500))
 
-        stats = {"visits_found": 0, "visits_imported": 0, "visits_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {"visits_found": 0, "visits_imported": 0, "visits_skipped": 0, "errors": []}
 
         try:
             # Get browser database path

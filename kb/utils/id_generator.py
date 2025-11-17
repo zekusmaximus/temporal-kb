@@ -17,7 +17,10 @@ def generate_id(prefix: str = "ent", length: int = 12) -> str:
 
 def short_hash(data: str, length: int = 8) -> str:
     """Deterministic short hash for strings (hex, truncated)."""
+    data_bytes: bytes
     if not isinstance(data, (bytes, bytearray)):
-        data = str(data).encode("utf-8")
-    digest = hashlib.sha256(data).hexdigest()
+        data_bytes = str(data).encode("utf-8")
+    else:
+        data_bytes = bytes(data)
+    digest = hashlib.sha256(data_bytes).hexdigest()
     return digest[: max(1, length)]

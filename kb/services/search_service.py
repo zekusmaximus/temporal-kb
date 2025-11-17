@@ -63,7 +63,7 @@ class SearchService:
                     self.session.query(EntryTag.entry_id)
                     .join(Tag)
                     .filter(Tag.name == tag_name)
-                    .subquery()
+                    .scalar_subquery()
                 )
                 q = q.filter(Entry.id.in_(tag_subq))
 
@@ -73,7 +73,7 @@ class SearchService:
                 self.session.query(EntryProject.entry_id)
                 .join(Project)
                 .filter(Project.name.in_(projects))
-                .subquery()
+                .scalar_subquery()
             )
             q = q.filter(Entry.id.in_(project_subq))
 
@@ -260,11 +260,11 @@ class SearchService:
                     self.session.query(EntryTag.entry_id)
                     .join(Tag)
                     .filter(Tag.name == tag_name)
-                    .subquery()
+                    .scalar_subquery()
                 )
                 q = q.filter(Entry.id.in_(tag_subq))
 
-        return q.scalar()
+        return int(q.scalar() or 0)
 
     def search_hybrid(
         self,

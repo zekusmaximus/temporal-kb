@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import yaml
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
@@ -53,9 +53,10 @@ class Config(BaseSettings):
 
     # Note: postgres_url and api_keys already defined above
 
-    class Config:
-        env_prefix = "KB_"
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_prefix="KB_",
+        env_file=".env"
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -109,6 +110,7 @@ def init_config(config_path: Optional[Path] = None) -> Config:
 
 def get_config() -> Config:
     """Get the global configuration instance"""
+    global _config
     if _config is None:
-        return init_config()
+        _config = init_config()
     return _config

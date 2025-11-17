@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, cast
 
 from ...core.schemas import EntryType
 from .base import ImporterBase
@@ -15,27 +15,26 @@ logger = logging.getLogger(__name__)
 class ChatExportImporter(ImporterBase):
     """Import chat conversations from Claude, ChatGPT, etc."""
 
-    def import_data(
-        self,
-        source: Path,
-        chat_format: str = "auto",
-        combine_conversations: bool = False,
-        tags: List[str] = None,
-    ) -> Dict[str, Any]:
+    def import_data(self, source: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Import chat exports
 
         Args:
             source: Path to export file or directory
-            chat_format: 'claude', 'chatgpt', or 'auto'
-            combine_conversations: Combine multi-turn conversations into one entry
-            tags: Additional tags
+            **kwargs:
+                chat_format (str): 'claude', 'chatgpt', or 'auto' (default: "auto")
+                combine_conversations (bool): Combine multi-turn conversations (default: False)
+                tags (List[str]): Additional tags
 
         Returns:
             Import statistics
         """
+        # Extract parameters from kwargs
+        chat_format = cast(str, kwargs.get("chat_format", "auto"))
+        combine_conversations = bool(kwargs.get("combine_conversations", False))
+        tags = cast(Optional[List[str]], kwargs.get("tags"))
 
-        stats = {
+        stats: Dict[str, Any] = {
             "conversations_found": 0,
             "conversations_imported": 0,
             "conversations_skipped": 0,
@@ -72,11 +71,11 @@ class ChatExportImporter(ImporterBase):
 
                     # Parse based on format
                     if detected_format == "claude":
-                        result = self._import_claude_export(data, tags)
+                        result = self._import_claude_export(data, tags or [])
                     elif detected_format == "chatgpt":
-                        result = self._import_chatgpt_export(data, tags)
+                        result = self._import_chatgpt_export(data, tags or [])
                     else:
-                        result = self._import_generic_export(data, tags)
+                        result = self._import_generic_export(data, tags or [])
 
                     if result:
                         stats["conversations_imported"] += 1

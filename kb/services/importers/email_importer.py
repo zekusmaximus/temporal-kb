@@ -1,12 +1,13 @@
 # kb/services/importers/email_importer.py
 
 import email
+import email.utils
 import imaplib
 import logging
 from datetime import datetime
 from email.parser import BytesParser
 from email.policy import default
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ...core.schemas import EntryType
 from .base import ImporterBase
@@ -17,35 +18,34 @@ logger = logging.getLogger(__name__)
 class EmailImporter(ImporterBase):
     """Import emails from IMAP servers (Gmail, Outlook, etc.)"""
 
-    def import_data(
-        self,
-        source: str,
-        username: str,
-        password: str,
-        folder: str = "INBOX",
-        since_date: Optional[datetime] = None,
-        labels: Optional[List[str]] = None,
-        sender_filter: Optional[str] = None,
-        limit: int = 100,
-    ) -> Dict[str, Any]:
+    def import_data(self, source: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         Import emails from IMAP server
 
         Args:
             source: IMAP server (e.g., 'imap.gmail.com')
-            username: Email address
-            password: App password (not regular password)
-            folder: Email folder to import from
-            since_date: Only import emails after this date
-            labels: Gmail labels to filter by
-            sender_filter: Only import from specific sender
-            limit: Maximum emails to import
+            **kwargs:
+                username (str): Email address (required)
+                password (str): App password (required)
+                folder (str): Email folder to import from (default: "INBOX")
+                since_date (datetime): Only import emails after this date
+                labels (List[str]): Gmail labels to filter by
+                sender_filter (str): Only import from specific sender
+                limit (int): Maximum emails to import (default: 100)
 
         Returns:
             Import statistics
         """
+        # Extract parameters from kwargs
+        username = cast(str, kwargs.get("username"))
+        password = cast(str, kwargs.get("password"))
+        folder = cast(str, kwargs.get("folder", "INBOX"))
+        since_date = cast(Optional[datetime], kwargs.get("since_date"))
+        labels = cast(Optional[List[str]], kwargs.get("labels"))
+        sender_filter = cast(Optional[str], kwargs.get("sender_filter"))
+        limit = int(kwargs.get("limit", 100))
 
-        stats = {"emails_found": 0, "emails_imported": 0, "emails_skipped": 0, "errors": []}
+        stats: Dict[str, Any] = {"emails_found": 0, "emails_imported": 0, "emails_skipped": 0, "errors": []}
 
         try:
             # Connect to IMAP server
@@ -94,8 +94,17 @@ class EmailImporter(ImporterBase):
                         continue
 
                     # Parse email
-                    raw_email = msg_data[0][1]
-                    email_message = BytesParser(policy=default).parsebytes(raw_email)
+                    if msg_data and len(msg_data) > 0:
+                        msg_tuple = msg_data[0]
+                        if isinstance(msg_tuple, tuple) and len(msg_tuple) > 1:
+                            raw_email = cast(bytes, msg_tuple[1])
+                            email_message = BytesParser(policy=default).parsebytes(raw_email)
+                        else:
+                            stats["emails_skipped"] += 1
+                            continue
+                    else:
+                        stats["emails_skipped"] += 1
+                        continue
 
                     # Extract data
                     subject = email_message["subject"] or "No Subject"

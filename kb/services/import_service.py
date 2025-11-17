@@ -1,7 +1,7 @@
 # kb/services/import_service.py
 
 import logging
-from typing import Optional
+from typing import Dict, Optional, Type
 
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,7 @@ class ImportService:
         """Get specific importer by type"""
 
         # Only include importers that are implemented
-        importers = {
+        importers: Dict[str, Type[ImporterBase]] = {
             "email": EmailImporter,
             "markdown": MarkdownImporter,
             "browser": BrowserHistoryImporter,
