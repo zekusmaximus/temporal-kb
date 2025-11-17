@@ -1,0 +1,57 @@
+.entry-form {
+  max-width: 800px;
+  margin: 2em 0;
+}
+
+.form-group {
+  margin-bottom: 1.5em;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4em;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  min-height: 300px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.required {
+  color: #c00;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 0.5em;
+  cursor: pointer;
+}
+
+.form-actions {
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid var(--border-color);
+}

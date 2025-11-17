@@ -1,0 +1,66 @@
+.on-this-day {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 1.5em;
+  margin-bottom: 2em;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2em;
+  margin-top: 1em;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--border-color);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5em;
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2.4em;
+  top: 0.4em;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--link-color);
+  border: 2px solid var(--bg-primary);
+}
+
+.timeline-date {
+  font-weight: bold;
+  color: var(--text-secondary);
+  margin-bottom: 0.3em;
+}
+
+.timeline-content {
+  color: var(--text-primary);
+}
+
+.event-type {
+  display: inline-block;
+  padding: 0.2em 0.5em;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  font-size: 0.85em;
+  margin-bottom: 0.5em;
+  color: var(--text-secondary);
+}
